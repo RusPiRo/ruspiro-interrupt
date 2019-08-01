@@ -1,0 +1,21 @@
+[package]
+name = "ruspiro-interrupt-macros"
+authors = ["André Borrmann <pspwizard@gmx.de>"]
+version = "0.0.1" # remember to update html_root_url
+description = "This crate provides the macros for the custom attributes used to implement interrupt handler."
+license = "Apache-2.0"
+repository = "https://github.com/RusPiRo/ruspiro-interrupt-macros/tree/v0.0.1"
+documentation = "https://docs.rs/ruspiro-interrupt-macros/0.0.1"
+readme = "README.md"
+keywords = ["RusPiRo", "baremetal", "raspberrypi", "interrupt", "macros"]
+categories = ["no-std", "embedded"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "0.15.40", features = ["full"] }
+quote = "0.6.13"
+
+[features]
