@@ -19,6 +19,6 @@ members = ["macros"]
 [dependencies]
 ruspiro-register = "0.0.2"
 ruspiro-interrupt-macros = { path = "./macros" }
-lazy_static = { version = "1.3.0", features = ["spin_no_std"] }
+ruspiro-singleton = "0.0.2"
 
 [features]

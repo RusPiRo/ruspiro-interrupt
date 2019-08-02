@@ -7,12 +7,12 @@
 //! # IRQ Types
 //! Defining the different possible IRQ's that can a handler could be registered for
 
+/// The list of available interrupts on Raspberry Pi 3. Not for all of them an interrupt handler can be successfully
+/// implemented.
+///
 #[repr(u8)]
 #[derive(Copy, Clone)]
-pub enum Interrupt {
-    //! The list of available interrupts on Raspberry Pi 3. Not for all of them an interrupt handler can be successfully
-    //! implemented.
-    //! 
+pub enum Interrupt {     
     // IRQ's appearing in the GPU pending register 1 and 2
     // IRQ 0 - 31 / Bank 1 (only the IRQ's that could be registered)
     SystemTimer1    = 1,
@@ -114,7 +114,7 @@ impl Interrupt {
             64 => Some(Interrupt::ArmTimer),
             65 => Some(Interrupt::ArmMailbox),
             66 => Some(Interrupt::ArmDoorbell0),
-            67 => Some(Interrupt:.ArmDoorbell1),
+            67 => Some(Interrupt::ArmDoorbell1),
             _ => None
         }
     }
