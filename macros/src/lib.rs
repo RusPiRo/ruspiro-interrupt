@@ -15,7 +15,7 @@
 //! 
 //! ```
 //! #[IrqHandler(ArmTimer)]
-//! unsafe fn MyTimerHandler() {
+//! unsafe fn my_timer_handler() {
 //!     // implement the interrupt handling here and do not forget
 //!     // to acknowledge the interrupt in the interrupt specific registers
 //!     // in case of the timer interrupt it would be done like so
@@ -40,9 +40,7 @@ use quote::quote;
 pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
     // indicate usage of this macro in the compiler output
     println!("implement handler for IRQ: \"{}\"", attr.to_string());
-    //let func: ItemFn = syn::parse(item).expect("`#IrqHandler` must be applied to a function");
-    //let args: AttributeArgs = syn::parse(attr).expect("This attribute requires 1 parameter");
-
+    
     let func = parse_macro_input!(item as ItemFn);
     let args:AttributeArgs = parse_macro_input!(attr as AttributeArgs);
     let irq_name = match args.get(0) {
@@ -70,27 +68,6 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let irq_id_s = irq_name.to_string();
     match &*irq_id_s {
-        /*"GpioBank0" | "GpioBank1" | "GpioBank2" => {
-            let valid_signature = valid_common_signature
-                && func.decl.inputs.len() == 1;
-                /* the following checks if the given parameter is a imutable reference
-                   but we needed to check for a u32 parameter which seem not to be possible so keep it as 
-                   a check for exactly one parameter is given...
-                && match func.decl.inputs[0] {
-                    FnArg::Captured(ref arg) => match arg.ty {
-                        Type::Reference(ref r) => r.lifetime.is_none() && r.mutability.is_none(),
-                        _ => false,
-                    },
-                    _ => false,
-                };*/
-            
-            if !valid_signature {
-                return syn::Error::new(syn::export::Span::call_site(), "interrupt handler must have signature `[unsafe] fn(u32)`")
-                .to_compile_error()
-                .into()
-            }    
-        },*/
-
         _ => {
             let valid_signature = valid_common_signature 
                 && func.decl.inputs.is_empty();

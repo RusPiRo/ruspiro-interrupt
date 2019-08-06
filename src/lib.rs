@@ -32,9 +32,9 @@
 //! fn demo() {
 //!     // as we have an interrupt handler defined we need to enable interrupt handling globally as well
 //!     // as the specific interrupt we have a handler implemented for
-//!     IRQ_MANAGER.take_for(|mgr| {
-//!         mgr.enable();
-//!         mgr.activate(Interrupt.ArmTimer);
+//!     IRQ_MANAGER.take_for(|irq_mgr| {
+//!         irq_mgr.enable();
+//!         irq_mgr.activate(Interrupt.ArmTimer);
 //!     });
 //! }
 //! ```
