@@ -7,19 +7,15 @@
 
 //! # Internal interrupt interface implementation
 //! 
-
 use ruspiro_register::define_registers;
 
-//#[cfg(feature="ruspiro-pi2")]
-//const PERIPHERAL_BASE: u32 = 0x2000_0000;
-
-#[cfg(feature="ruspiro-pi3")]
+#[cfg(feature="ruspiro_pi3")]
 const PERIPHERAL_BASE: u32 = 0x3F00_0000;
 
-#[cfg(feature="ruspiro-pi3")]
+#[cfg(feature="ruspiro_pi3")]
 const ARM_CORE_BASE: u32 = 0x4000_0000;
 
-const ARM_IRQ_BASE: u32 = PERIPHERAL_BASE + 0x0000_B200;
+const ARM_IRQ_BASE: u32 = PERIPHERAL_BASE + 0x0000_B000;
 
 pub(crate) fn initialize() {
     // disable all interrupts in all 3 banks by default
@@ -55,30 +51,60 @@ pub(crate) fn disable_f() {
     unsafe { asm!("cpsid f") };
 }
 
+pub(crate) fn activate(bank: u32, irq_num: u32) {
+    let enable_bit = 1 << (irq_num & 0x1F);
+    match bank {
+        0 => IRQ_ENABLE_1::Register.set(enable_bit),
+        1 => IRQ_ENABLE_2::Register.set(enable_bit),
+        2 => IRQ_ENABLE_B::Register.set(enable_bit),
+        _ => (),
+    }
+}
+
+pub(crate) fn deactivate(bank: u32, irq_num: u32) {
+    let disable_bit = 1 << (irq_num & 0x1F);
+    match bank {
+        0 => IRQ_DISABLE_1::Register.set(disable_bit),
+        1 => IRQ_DISABLE_2::Register.set(disable_bit),
+        2 => IRQ_DISABLE_B::Register.set(disable_bit),
+        _ => (),
+    }
+}
+
+pub(crate) fn get_pending_irqs() -> [u32; 3] {
+    let pendings: [u32; 3] = [
+            IRQ_PENDING_1::Register.get(),
+            IRQ_PENDING_2::Register.get(),
+            IRQ_PENDING_B::Register.get(),
+        ];
+
+    pendings
+}
+
 define_registers! [
-    GPU_INT_ROUTING: ReadWrite<u32> @ ARM_CORE_BASE + 0x0C => [],
+    GPU_INT_ROUTING: ReadWrite<u32> @ ARM_CORE_BASE + 0x20C,
 
-    CORE_MB_INT_CONTROL0: ReadWrite<u32> @ ARM_CORE_BASE + 0x50 => [],
-    CORE_MB_INT_CONTROL1: ReadWrite<u32> @ ARM_CORE_BASE + 0x54 => [],
-    CORE_MB_INT_CONTROL2: ReadWrite<u32> @ ARM_CORE_BASE + 0x58 => [],
-    CORE_MB_INT_CONTROL3: ReadWrite<u32> @ ARM_CORE_BASE + 0x5C => [],
+    CORE_MB_INT_CONTROL0: ReadWrite<u32> @ ARM_CORE_BASE + 0x250,
+    CORE_MB_INT_CONTROL1: ReadWrite<u32> @ ARM_CORE_BASE + 0x254,
+    CORE_MB_INT_CONTROL2: ReadWrite<u32> @ ARM_CORE_BASE + 0x258,
+    CORE_MB_INT_CONTROL3: ReadWrite<u32> @ ARM_CORE_BASE + 0x25C,
 
-    CORE_IRQ_PENDING0: ReadWrite<u32> @ ARM_CORE_BASE + 0x60 => [],
-    CORE_IRQ_PENDING1: ReadWrite<u32> @ ARM_CORE_BASE + 0x64 => [],
-    CORE_IRQ_PENDING2: ReadWrite<u32> @ ARM_CORE_BASE + 0x68 => [],
-    CORE_IRQ_PENDING3: ReadWrite<u32> @ ARM_CORE_BASE + 0x6C => [],
+    CORE_IRQ_PENDING0: ReadWrite<u32> @ ARM_CORE_BASE + 0x260,
+    CORE_IRQ_PENDING1: ReadWrite<u32> @ ARM_CORE_BASE + 0x264,
+    CORE_IRQ_PENDING2: ReadWrite<u32> @ ARM_CORE_BASE + 0x268,
+    CORE_IRQ_PENDING3: ReadWrite<u32> @ ARM_CORE_BASE + 0x26C,
 
-    IRQ_PENDING_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x00 => [],
-    IRQ_PENDING_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x04 => [],
-    IRQ_PENDING_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x08 => [],
+    IRQ_PENDING_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x200,
+    IRQ_PENDING_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x204,
+    IRQ_PENDING_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x208,
     
-    FIQ_CONTROL: ReadWrite<u32> @ ARM_IRQ_BASE + 0x0C => [],
+    FIQ_CONTROL: ReadWrite<u32> @ ARM_IRQ_BASE + 0x20C,
 
-    IRQ_ENABLE_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x10 => [],
-    IRQ_ENABLE_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x14 => [],
-    IRQ_ENABLE_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x18 => [],
+    IRQ_ENABLE_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x210,
+    IRQ_ENABLE_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x214,
+    IRQ_ENABLE_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x218,
 
-    IRQ_DISABLE_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x1C => [],
-    IRQ_DISABLE_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x20 => [],
-    IRQ_DISABLE_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x24 => []
+    IRQ_DISABLE_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x21C,
+    IRQ_DISABLE_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x220,
+    IRQ_DISABLE_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x224
 ];
