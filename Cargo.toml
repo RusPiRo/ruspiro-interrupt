@@ -2,7 +2,7 @@
 name = "ruspiro-interrupt"
 authors = ["André Borrmann <pspwizard@gmx.de>"]
 version = "0.1.0" # remember to update html_root_url
-description = "This crates provides features to implement interrupt handler for common Raspberry Pi interrupts."
+description = "Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts."
 license = "Apache-2.0"
 repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v0.1.0"
 documentation = "https://docs.rs/ruspiro-interrupt/0.1.0"

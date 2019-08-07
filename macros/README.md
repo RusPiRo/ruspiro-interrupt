@@ -1,6 +1,6 @@
 # RusPiRo Interrupt handler implementation macros
 
-This crate provides the compile time code generation macro for the interrupt handler implementation.
+This crate provides the compile time code generation macros for the interrupt handler implementation.
 It is only usefull in conjuction with the ``ruspiro-interrupt`` crate.
 
 ## Usage
