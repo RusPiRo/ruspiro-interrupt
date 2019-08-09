@@ -4,7 +4,7 @@
  * Author: André Borrmann 
  * License: Apache License 2.0
  **********************************************************************************************************************/
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.1.1")]
 #![no_std]
 #![feature(asm)]
 #![feature(linkage)]
@@ -26,7 +26,7 @@
 //!     // implement stuff that shall be executed if the interrupt is raised...
 //!     // be careful when this code uses spinlocks as this might lead to dead-locks if the 
 //!     // executing code interrupted currently helds a lock the code inside this handler tries to aquire the same one
-//!     println('timer interrupt raised');
+//!     println!("timer interrupt raised");
 //! }
 //! 
 //! fn demo() {
