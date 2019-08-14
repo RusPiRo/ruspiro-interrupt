@@ -86,7 +86,7 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
                             .to_compile_error()
                             .into()
             };
-            let aux_source_s = aux_type.to_string();
+            let aux_source_s = aux_source.to_string();
             // check for valid Aux types
             if &*aux_source_s != "Uart1" && &*aux_source_s != "Spi1" && &*aux_source_s != "Spi2" {
                 return syn::Error::new(syn::export::Span::call_site(), "Wrong source for `Aux` interrupt in `#[IrqHandler(Aux, <SOURCE>)`. <SOURCE> could be one of: `Uart1` | `Spi1` | `Spi2`.")
@@ -102,7 +102,7 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         .into()
             }
 
-            format!("{}_{}", irq_name.to_string(), aux_type.to_string())
+            format!("{}_{}", irq_name.to_string(), aux_source.to_string())
         },
         _ => {
             let valid_signature = valid_common_signature 
