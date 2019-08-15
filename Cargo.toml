@@ -1,6 +1,6 @@
 [package]
 name = "ruspiro-interrupt"
-authors = ["André Borrmann <pspwizard@gmx.de>"]
+authors = ["Andre Borrmann <pspwizard@gmx.de>"]
 version = "0.2.0" # remember to update html_root_url
 description = "Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts."
 license = "Apache-2.0"
