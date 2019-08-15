@@ -4,7 +4,7 @@
  * Author: André Borrmann 
  * License: Apache License 2.0
  **********************************************************************************************************************/
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.1.1")]
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.2.0")]
 #![no_std]
 #![feature(asm)]
 #![feature(linkage)]
@@ -17,6 +17,7 @@
 //! # Usage
 //! 
 //! ```
+//! extern crate ruspiro_interrupt; // <- this kind of usage is VERY IMPORTANT to ensure linking works as expected!
 //! use ruspiro_interrupt::*;
 //! 
 //! #[IrqHandler(ArmTimer)]
@@ -41,13 +42,16 @@
 //! 
 
 extern crate alloc;
+extern crate paste;
 
 pub use ruspiro_interrupt_macros::*;
 pub mod irqtypes;
 pub use irqtypes::*;
 
 use ruspiro_singleton::Singleton;
+
 mod interface;
+mod auxhandler;
 
 use alloc::vec::*;
 
@@ -147,7 +151,7 @@ unsafe fn __interrupt_h(_core: u32) {
                 13  => __irq_handler__CoreSync1(),
                 14  => __irq_handler__CoreSync2(),
                 15  => __irq_handler__CoreSync3(),
-                29  => __irq_handler__Aux(),
+                29  => auxhandler::aux_handler(),//__irq_handler__Aux(),
                 30  => __irq_handler__Arm(),
                 31  => __irq_handler__GpuDma(),
                 49  => __irq_handler__GpioBank0(),
@@ -156,7 +160,7 @@ unsafe fn __interrupt_h(_core: u32) {
                 52  => __irq_handler__GpioBank3(),
                 53  => __irq_handler__I2c(),
                 54  => __irq_handler__Spi(),
-                55  =>__irq_handler__I2sPcm(),
+                55  => __irq_handler__I2sPcm(),
                 56  => __irq_handler__Sdio(),
                 57  => __irq_handler__Pl011(),
                 64  => __irq_handler__ArmTimer(),
@@ -188,6 +192,53 @@ fn set_bits_to_vec(value: u32, base: u8) -> Vec<u8> {
     v
 }
 
+macro_rules! default_handler_impl {
+    ($($name:ident),*) => {$(
+        paste::item!{
+            #[allow(non_snake_case)]
+            #[linkage="weak"]
+            #[no_mangle]
+            extern "C" fn [<__irq_handler__ $name>](){
+                __irq_handler_Default();
+            }
+        }
+    )*};
+}
+
+default_handler_impl![
+    SystemTimer1,
+    SystemTimer3,
+    Isp,
+    Usb,
+    CoreSync0,
+    CoreSync1,
+    CoreSync2,
+    CoreSync3,
+    Aux_Uart1,
+    Aux_Spi1,
+    Aux_Spi2,
+    Arm,
+    GpuDma,
+    GpioBank0,
+    GpioBank1,
+    GpioBank2,
+    GpioBank3,
+    I2c,
+    Spi,
+    I2sPcm,
+    Sdio,
+    Pl011,
+    ArmTimer,
+    ArmMailbox,
+    ArmDoorbell0,
+    ArmDoorbell1,
+    ArmGpu0Halted,
+    ArmGpu1Halted,
+    ArmIllegalType1,
+    ArmIllegalType0,
+    ArmPending1,
+    ArmPending2
+];
 
 #[allow(non_snake_case)]
 #[no_mangle]
@@ -195,6 +246,7 @@ fn __irq_handler_Default() {
 
 }
 
+/*
 #[allow(non_snake_case)]
 #[linkage="weak"]
 #[no_mangle]
@@ -404,3 +456,4 @@ extern "C" fn __irq_handler__ArmPending1(){
 extern "C" fn __irq_handler__ArmPending2(){
     __irq_handler_Default();
 }
+*/

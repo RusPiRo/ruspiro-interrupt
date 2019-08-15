@@ -4,11 +4,11 @@
  * Author: André Borrmann 
  * License: Apache License 2.0
  **********************************************************************************************************************/
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt-macros/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt-macros/0.2.0")]
 
 //! # Interrupt Macros
 //! 
-//! This crate provides the custom attribute ``#[IrqHandler(<interrupt type>)]`` to be used when implementing an 
+//! This crate provides the custom attribute ``#[IrqHandler(<interrupt type>[, <source>])]`` to be used when implementing an 
 //! interrupt handler.
 //! 
 //! # Usage
@@ -25,6 +25,16 @@
 //! 
 //! define_registers! ( TIMERIRQ: WriteOnly<u32> @ 0x3F00_B40C => [] );
 //! ```
+//! 
+//! In some rare cases the interrupt line is shared between specific interrupt sources. In this case the source of
+//! the interrupt need to be passed as well as an identifier.
+//! ```
+//! #[IrqHandler(Aux, Uart1)]
+//! unsafe fn my_aux_uart1_handler() {
+//!     // handle Uart1 interrupt here - this usually has no "acknowledge" register...
+//! }
+//! ```
+//! 
 //! 
 
 extern crate proc_macro;
@@ -67,7 +77,33 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
         };
 
     let irq_id_s = irq_name.to_string();
-    match &*irq_id_s {
+    let irq_func_suffix = match &*irq_id_s {
+        "Aux" => {
+            // Aux IrqHandler tag signature is: IrqHandler(Aux,Uart1)
+            let aux_source = match args.get(1) {
+                Some(NestedMeta::Meta(Meta::Word(meta))) => meta,
+                _=> return syn::Error::new(syn::export::Span::call_site(), "`Aux` interrupt source missing in `#[IrqHandler(Aux, <SOURCE>)`. <SOURCE> could be one of: `Uart1` | `Spi1` | `Spi2`.")
+                            .to_compile_error()
+                            .into()
+            };
+            let aux_source_s = aux_source.to_string();
+            // check for valid Aux types
+            if &*aux_source_s != "Uart1" && &*aux_source_s != "Spi1" && &*aux_source_s != "Spi2" {
+                return syn::Error::new(syn::export::Span::call_site(), "Wrong source for `Aux` interrupt in `#[IrqHandler(Aux, <SOURCE>)`. <SOURCE> could be one of: `Uart1` | `Spi1` | `Spi2`.")
+                        .to_compile_error()
+                        .into()
+            }
+            let valid_signature = valid_common_signature 
+                && func.decl.inputs.is_empty();
+
+            if !valid_signature {
+                return syn::Error::new(syn::export::Span::call_site(), "interrupt handler must have signature `[unsafe] fn()`")
+                        .to_compile_error()
+                        .into()
+            }
+
+            format!("{}_{}", irq_name.to_string(), aux_source.to_string())
+        },
         _ => {
             let valid_signature = valid_common_signature 
                 && func.decl.inputs.is_empty();
@@ -77,6 +113,8 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 .to_compile_error()
                 .into()
             }
+
+            irq_name.to_string()
         },
     };
 
@@ -85,7 +123,7 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let block = func.block; // function block
     let stmts = block.stmts; // function statements
 
-    let irq_name_s = format!("__irq_handler__{}", irq_name.to_string());
+    let irq_name_s = format!("__irq_handler__{}", irq_func_suffix);
     quote!(
         // use a fixed export name to ensure the same irq handler is not implemented twice
         #[allow(non_snake_case)]

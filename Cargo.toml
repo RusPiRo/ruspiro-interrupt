@@ -1,15 +1,19 @@
 [package]
 name = "ruspiro-interrupt"
-authors = ["André Borrmann <pspwizard@gmx.de>"]
-version = "0.1.1" # remember to update html_root_url
+authors = ["Andre Borrmann <pspwizard@gmx.de>"]
+version = "0.2.0" # remember to update html_root_url
 description = "Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts."
 license = "Apache-2.0"
-repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v0.1.1"
-documentation = "https://docs.rs/ruspiro-interrupt/0.1.1"
+repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v0.2.0"
+documentation = "https://docs.rs/ruspiro-interrupt/0.2.0"
 readme = "README.md"
 keywords = ["RusPiRo", "baremetal", "raspberrypi", "interrupt"]
 categories = ["no-std", "embedded"]
 edition = "2018"
+
+[badges]
+travis-ci = { repository = "RusPiRo/ruspiro-interrupt", branch = "master" }
+maintenance = { status = "actively-developed" }
 
 [workspace]
 members = ["macros"]
@@ -17,8 +21,9 @@ members = ["macros"]
 [lib]
 
 [dependencies]
+paste = "0.1.5"
 ruspiro-register = "0.1.1"
-ruspiro-interrupt-macros = { path = "./macros", version = "0.1.0" }
+ruspiro-interrupt-macros = { path = "./macros", version = "0.2.0" }
 ruspiro-singleton = "0.1.0"
 
 [features]
