@@ -15,8 +15,8 @@ edition = "2018"
 travis-ci = { repository = "RusPiRo/ruspiro-interrupt", branch = "master" }
 maintenance = { status = "actively-developed" }
 
-[workspace]
-members = ["macros", "core"]
+#[workspace]
+#members = ["macros", "core"]
 
 [lib]
 
