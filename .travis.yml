@@ -14,10 +14,6 @@ matrix:
 
 script: ./travis-build.sh
 
-before_install:
-# clone latest ruspiro-singleton before build
-  - git clone https://github.com/RusPiRo/ruspiro-singleton.git ../ruspiro-singleton
-
 install:
 # install cross compiler toolchain
   - sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf

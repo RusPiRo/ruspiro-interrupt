@@ -15,9 +15,6 @@ edition = "2018"
 travis-ci = { repository = "RusPiRo/ruspiro-interrupt", branch = "master" }
 maintenance = { status = "actively-developed" }
 
-#[workspace]
-#members = ["macros", "core"]
-
 [lib]
 
 [dependencies]
@@ -25,7 +22,7 @@ paste = "0.1.5"
 ruspiro-register = "0.1"
 ruspiro-interrupt-core = { path = "./core", version = "0.2" }
 ruspiro-interrupt-macros = { path = "./macros", version = "0.2" }
-ruspiro-singleton = { path = "../ruspiro-singleton", version = "0.2" }
+ruspiro-singleton = "0.2"
 
 [features]
 default = ["ruspiro_pi3"]
