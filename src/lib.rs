@@ -4,12 +4,12 @@
  * Author: André Borrmann 
  * License: Apache License 2.0
  **********************************************************************************************************************/
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.2.0")]
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.2.1")]
 #![no_std]
 #![feature(asm)]
 #![feature(linkage)]
 
-//! # Raspberry Pi Interrupt handler
+//! # Interrupt handler for Raspberry Pi
 //! 
 //! This crates provides functions and macros (custom attribute) to conviniently implement interrupt handler for 
 //! Raspberry Pi 3. The possible interrupts a handler can be implemented for are available as enum [irqtypes::Interrupt]
@@ -155,7 +155,7 @@ unsafe fn __interrupt_h(_core: u32) {
                 13  => __irq_handler__CoreSync1(),
                 14  => __irq_handler__CoreSync2(),
                 15  => __irq_handler__CoreSync3(),
-                29  => auxhandler::aux_handler(),//__irq_handler__Aux(),
+                29  => auxhandler::aux_handler(),
                 30  => __irq_handler__Arm(),
                 31  => __irq_handler__GpuDma(),
                 49  => __irq_handler__GpioBank0(),
@@ -249,215 +249,3 @@ default_handler_impl![
 fn __irq_handler_Default() {
 
 }
-
-/*
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__SystemTimer1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__SystemTimer3(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Isp(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Usb(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__CoreSync0(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__CoreSync1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__CoreSync2(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__CoreSync3(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Aux(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Arm(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpuDma(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpioBank0(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpioBank1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpioBank2(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpioBank3(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__I2c(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Spi(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__I2sPcm(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Sdio(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Pl011(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmTimer(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmMailbox(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmDoorbell0(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmDoorbell1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmGpu0Halted(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmGpu1Halted(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmIllegalType1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmIllegalType0(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmPending1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmPending2(){
-    __irq_handler_Default();
-}
-*/

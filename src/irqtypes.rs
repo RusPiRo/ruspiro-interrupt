@@ -1,16 +1,19 @@
-/* 
- * irqtypes.rs Copyright (c) 2019 by the authors
+/*********************************************************************************************************************** 
+ * Copyright (c) 2019 by the authors
  * 
  * Author: André Borrmann 
  * License: Apache License 2.0
- */
-//! # IRQ Types
-//! Defining the different possible IRQ's that can a handler could be registered for
+ **********************************************************************************************************************/
+
+//! # Interrupt Types
+//! 
+//! Defining the different possible interrupts of the Raspberry Pi a handler could be registered for.
+//! 
 
 /// The list of available interrupts on Raspberry Pi 3.
-/// Note: Even if it is possible to register an interrupt handler for them the behaviour is
-/// might be untested/undefined. Please read the corresponding specs for the different interrupts
-/// to understand how to acknowledge them inside the handler implementation.
+/// Note: Even if it is possible to register an interrupt handler for them the behaviour might be untested/undefined.
+/// Please read the corresponding specs for the different interrupts to understand how to acknowledge them inside the
+/// individual handler implementation.
 ///
 #[repr(u8)]
 #[derive(Copy, Clone)]

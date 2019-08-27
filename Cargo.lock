@@ -64,7 +64,7 @@ dependencies = [
 
 [[package]]
 name = "ruspiro-interrupt"
-version = "0.2.2"
+version = "0.2.1"
 dependencies = [
  "paste 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "ruspiro-interrupt-core 0.2.0",
