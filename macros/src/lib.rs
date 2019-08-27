@@ -88,7 +88,9 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
             };
             let aux_source_s = aux_source.to_string();
             // check for valid Aux types
-            if &*aux_source_s != "Uart1" && &*aux_source_s != "Spi1" && &*aux_source_s != "Spi2" {
+            if &*aux_source_s != "Uart1" &&
+               &*aux_source_s != "Spi1" && 
+               &*aux_source_s != "Spi2" {
                 return syn::Error::new(syn::export::Span::call_site(), "Wrong source for `Aux` interrupt in `#[IrqHandler(Aux, <SOURCE>)`. <SOURCE> could be one of: `Uart1` | `Spi1` | `Spi2`.")
                         .to_compile_error()
                         .into()
@@ -133,7 +135,7 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
         pub unsafe fn #ident() {
             // force compiler error if the irq_name does not appear in the Interrupt enum that need to be
             // referred to in the crate using this attribute
-            crate::irqtypes::Interrupt::#irq_name;
+            self::irqtypes::Interrupt::#irq_name;
 
             #(#stmts)*
         }

@@ -2,22 +2,22 @@
 # It is not intended for manual editing.
 [[package]]
 name = "paste"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "paste-impl 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "paste-impl 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro-hack 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "paste-impl"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "proc-macro-hack 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
- "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
- "quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
- "syn 0.15.44 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -25,9 +25,9 @@ name = "proc-macro-hack"
 version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "proc-macro2 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "quote 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "syn 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -40,7 +40,7 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "unicode-xid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -56,21 +56,26 @@ dependencies = [
 
 [[package]]
 name = "quote"
-version = "1.0.0"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "proc-macro2 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "ruspiro-interrupt"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
- "paste 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "paste 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ruspiro-interrupt-core 0.2.0",
  "ruspiro-interrupt-macros 0.2.0",
  "ruspiro-register 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "ruspiro-singleton 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ruspiro-singleton 0.2.0",
 ]
+
+[[package]]
+name = "ruspiro-interrupt-core"
+version = "0.2.0"
 
 [[package]]
 name = "ruspiro-interrupt-macros"
@@ -82,8 +87,10 @@ dependencies = [
 
 [[package]]
 name = "ruspiro-lock"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+version = "0.2.0"
+dependencies = [
+ "ruspiro-interrupt-core 0.2.0",
+]
 
 [[package]]
 name = "ruspiro-register"
@@ -92,10 +99,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "ruspiro-singleton"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+version = "0.2.0"
 dependencies = [
- "ruspiro-lock 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ruspiro-interrupt-core 0.2.0",
+ "ruspiro-lock 0.2.0",
 ]
 
 [[package]]
@@ -110,11 +117,11 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.1"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "proc-macro2 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "quote 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "unicode-xid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -129,17 +136,15 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
-"checksum paste 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "1f4a4a1c555c6505821f9d58b8779d0f630a6b7e4e1be24ba718610acf01fa79"
-"checksum paste-impl 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "26e796e623b8b257215f27e6c80a5478856cae305f5b59810ff9acdaa34570e6"
+"checksum paste 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "423a519e1c6e828f1e73b720f9d9ed2fa643dce8a7737fb43235ce0b41eeaa49"
+"checksum paste-impl 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "4214c9e912ef61bf42b81ba9a47e8aad1b2ffaf739ab162bf96d1e011f54e6c5"
 "checksum proc-macro-hack 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)" = "e688f31d92ffd7c1ddc57a1b4e6d773c0f2a14ee437a4b0a4f5a69c80eb221c8"
 "checksum proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)" = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
-"checksum proc-macro2 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "19f287c234c9b2d0308d692dee5c449c1a171167a6f8150f7cf2a49d8fd96967"
+"checksum proc-macro2 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "4c5c2380ae88876faae57698be9e9775e3544decad214599c3a6266cca6ac802"
 "checksum quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)" = "6ce23b6b870e8f94f81fb0a363d65d86675884b34a09043c81e5562f11c1f8e1"
-"checksum quote 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7ab938ebe6f1c82426b5fb82eaf10c3e3028c53deaa3fbe38f5904b37cf4d767"
-"checksum ruspiro-lock 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5655fe05fe4b90dc84698371cf0d7db487c6826933017ae199d908cb2a96e9bc"
+"checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
 "checksum ruspiro-register 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b980f28994eba9f2f2a7e539acdc2daf7903cd38dd173c24153d4a2a69f23414"
-"checksum ruspiro-singleton 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "03fbde4c1f1bc3a4cc88ad0e8f33e20ff7397a87a11b9856edea412e4bef863d"
 "checksum syn 0.15.44 (registry+https://github.com/rust-lang/crates.io-index)" = "9ca4b3b69a77cbe1ffc9e198781b7acb0c7365a883670e8f1c1bc66fba79a5c5"
-"checksum syn 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "863ecbce06044c8380458360b4146d7372edadfedd77f120ba8c193da427b708"
+"checksum syn 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)" = "66850e97125af79138385e9b88339cbcd037e3f28ceab8c5ad98e64f0f1f80bf"
 "checksum unicode-xid 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fc72304796d0818e357ead4e000d19c9c174ab23dc11093ac919054d20a6a7fc"
 "checksum unicode-xid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"

@@ -2,7 +2,10 @@
 name = "ruspiro-interrupt-macros"
 authors = ["Andre Borrmann <pspwizard@gmx.de>"]
 version = "0.2.0" # remember to update html_root_url
-description = "Macros used to implement interrupt handler. !!This crate is only useful in conjunction with the `ruspiro-interrupt` crate and shall never be used standalone!!"
+description = """
+Macros used to implement interrupt handler.
+!!This crate is only useful in conjunction with the `ruspiro-interrupt` crate and shall never be used standalone!!
+"""
 license = "Apache-2.0"
 repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v0.2.0"
 documentation = "https://docs.rs/ruspiro-interrupt/0.2.0"

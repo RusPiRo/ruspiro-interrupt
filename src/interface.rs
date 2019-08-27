@@ -35,22 +35,6 @@ pub(crate) fn initialize() {
     CORE_MB_INT_CONTROL3::Register.set(1 << 3);
 }
 
-pub(crate) fn enable_i() {
-    unsafe { asm!("cpsie i") };
-}
-
-pub(crate) fn enable_f() {
-    unsafe { asm!("cpsie f") };
-}
-
-pub(crate) fn disable_i() {
-    unsafe { asm!("cpsid i") };
-}
-
-pub(crate) fn disable_f() {
-    unsafe { asm!("cpsid f") };
-}
-
 pub(crate) fn activate(bank: u32, irq_num: u32) {
     let enable_bit = 1 << (irq_num & 0x1F);
     match bank {
