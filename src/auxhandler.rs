@@ -4,9 +4,10 @@
  * Author: André Borrmann 
  * License: Apache License 2.0
  **********************************************************************************************************************/
-//! # Aux interrupt line special handler
+//! # Aux interrupt line handler
 //! 
-//! The Aux interrupt line is shared between Uart1, Spi1 and Spi2. Therefore the 
+//! The Aux interrupt line is shared between Uart1, Spi1 and Spi2. This handler branches to the specific handler
+//! implementation based on the interrupt source.
 //! 
 
 use ruspiro_register::define_registers;
@@ -30,7 +31,7 @@ pub(crate) fn aux_handler() {
 }
 
 define_registers! [
-    AUX_IRQ:          ReadWrite<u32> @ PERIPHERAL_BASE + 0x0021_5000 => [
+    AUX_IRQ: ReadWrite<u32> @ PERIPHERAL_BASE + 0x0021_5000 => [
         SPI2    OFFSET(2),
         SPI1    OFFSET(1),
         UART1   OFFSET(0)

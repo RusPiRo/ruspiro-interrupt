@@ -4,12 +4,12 @@
  * Author: André Borrmann 
  * License: Apache License 2.0
  **********************************************************************************************************************/
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.2.0")]
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.2.1")]
 #![no_std]
 #![feature(asm)]
 #![feature(linkage)]
 
-//! # Raspberry Pi Interrupt handler
+//! # Interrupt handler for Raspberry Pi
 //! 
 //! This crates provides functions and macros (custom attribute) to conviniently implement interrupt handler for 
 //! Raspberry Pi 3. The possible interrupts a handler can be implemented for are available as enum [irqtypes::Interrupt]
@@ -30,7 +30,7 @@
 //!     println!("timer interrupt raised");
 //! }
 //! 
-//! fn demo() {
+//! fn doc() {
 //!     // as we have an interrupt handler defined we need to enable interrupt handling globally as well
 //!     // as the specific interrupt we have a handler implemented for
 //!     IRQ_MANAGER.take_for(|irq_mgr| {
@@ -40,10 +40,22 @@
 //! }
 //! ```
 //! 
+//! In some cases the interrupt type/line is shared between different sources. In those cases a handler need to be
+//! implemented for the specific interrupt source. The source is given in the custom attribute like this:
+//! ```
+//! #[IrqHandler(Aux, Uart1)]
+//! fn aux_uart1_handler() {
+//!     // implement Uart1 interrupt handler here
+//! }
+//! ```
+//! However, only a limited ammount of shared interrupts is available with the current version - which is only the **Aux**
+//! interrupt at the moment.
+//! 
 
 extern crate alloc;
 extern crate paste;
 
+pub use ruspiro_interrupt_core::*;
 pub use ruspiro_interrupt_macros::*;
 pub mod irqtypes;
 pub use irqtypes::*;
@@ -75,18 +87,6 @@ impl InterruptManager {
         interface::initialize();
     }
 
-    /// globally enable interrupts
-    pub fn enable(&self) {
-        interface::enable_i();
-        interface::enable_f();
-    }
-
-    /// globally disable interrupts
-    pub fn disable(&self) {
-        interface::disable_i();
-        interface::disable_f();
-    }
-
     /// activate a specific interrupt to be raised and handled (id a handler is implemented)
     /// if there is no handler implemented for this interrupt it may lead to an endless interrupt
     /// loop as the interrupt never gets acknowledged by the handler.
@@ -99,6 +99,8 @@ impl InterruptManager {
         interface::activate(irq_bank, irq_num);
         
         self.enabled[irq_bank as usize] |= 1 << (irq_num & 0x1F);
+        //println!("enabled Irq's: {:X}, {:X}, {:X}", self.enabled[0], self.enabled[1], self.enabled[2]);
+        #[cfg(target_arch="arm")]
         unsafe{ asm!("dmb") };
     }
 
@@ -111,6 +113,7 @@ impl InterruptManager {
         interface::deactivate(irq_bank, irq_num);
         
         self.enabled[irq_bank as usize] &= !(1 << (irq_num & 0x1F));
+        #[cfg(target_arch="arm")]
         unsafe{ asm!("dmb") };
     }
 }
@@ -126,9 +129,10 @@ impl InterruptManager {
 /// done somewhere else
 #[no_mangle]
 unsafe fn __interrupt_h(_core: u32) {
-    IRQ_MANAGER.use_weak_for(|mgr| {
+    IRQ_MANAGER.use_for(|mgr| {
         // check wheter the interrupt in a pending register really has been activiated
         let pendings: [u32; 3] = interface::get_pending_irqs();
+        //info!("irq raised. pending: {:X}, {:X}, {:X}", pendings[0], pendings[1], pendings[2]);
 
         // build a list of interrupt id's based on the bit's set in the 3 irq enable banks
         let active_irqs: Vec<u8> = (0..).zip(&pendings).fold(Vec::new(), |acc, p| {
@@ -151,7 +155,7 @@ unsafe fn __interrupt_h(_core: u32) {
                 13  => __irq_handler__CoreSync1(),
                 14  => __irq_handler__CoreSync2(),
                 15  => __irq_handler__CoreSync3(),
-                29  => auxhandler::aux_handler(),//__irq_handler__Aux(),
+                29  => auxhandler::aux_handler(),
                 30  => __irq_handler__Arm(),
                 31  => __irq_handler__GpuDma(),
                 49  => __irq_handler__GpioBank0(),
@@ -245,215 +249,3 @@ default_handler_impl![
 fn __irq_handler_Default() {
 
 }
-
-/*
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__SystemTimer1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__SystemTimer3(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Isp(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Usb(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__CoreSync0(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__CoreSync1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__CoreSync2(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__CoreSync3(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Aux(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Arm(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpuDma(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpioBank0(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpioBank1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpioBank2(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__GpioBank3(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__I2c(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Spi(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__I2sPcm(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Sdio(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__Pl011(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmTimer(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmMailbox(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmDoorbell0(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmDoorbell1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmGpu0Halted(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmGpu1Halted(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmIllegalType1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmIllegalType0(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmPending1(){
-    __irq_handler_Default();
-}
-
-#[allow(non_snake_case)]
-#[linkage="weak"]
-#[no_mangle]
-extern "C" fn __irq_handler__ArmPending2(){
-    __irq_handler_Default();
-}
-*/

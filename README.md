@@ -17,7 +17,7 @@ script providing all the necessary linker symbols and entrypoints calling into t
 To use the crate just add the following dependency to your ``Cargo.toml`` file:
 ```
 [dependencies]
-ruspiro-interrupt = "0.2.0"
+ruspiro-interrupt = "0.2"
 ```
 
 Once done the access to the features/attribute of the interrupt crate is available in your rust files like so:
@@ -37,6 +37,9 @@ unsafe fn my_handler_for_source() {
 
 }
 ```
+
+The currently only implemented shared source interrupt line is the ``AUX`` interrupt. There the source could be one of:
+``Uart1``, ``Spi1`` or ``Spi2``.
 
 ## License
 Licensed under Apache License, Version 2.0, ([LICENSE](LICENSE) or http://www.apache.org/licenses/LICENSE-2.0)
