@@ -4,7 +4,7 @@
  * Author: André Borrmann 
  * License: Apache License 2.0
  **********************************************************************************************************************/
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.2.1")]
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.3.0")]
 #![no_std]
 #![feature(asm)]
 #![feature(linkage)]
@@ -34,9 +34,12 @@
 //!     // as we have an interrupt handler defined we need to enable interrupt handling globally as well
 //!     // as the specific interrupt we have a handler implemented for
 //!     IRQ_MANAGER.take_for(|irq_mgr| {
-//!         irq_mgr.enable();
-//!         irq_mgr.activate(Interrupt.ArmTimer);
+//!         irq_mgr.initialize();
+//!         irq_mgr.activate(Interrupt::ArmTimer);
+//!         irq_mgr.activate(Interrupt::Aux);
 //!     });
+//! 
+//!     enable_interrupts();
 //! }
 //! ```
 //! 
@@ -95,13 +98,13 @@ impl InterruptManager {
     pub fn activate(&mut self, irq: Interrupt) {
         let irq_num = irq as u32;
         let irq_bank = irq_num >> 5;
+                
+        self.enabled[irq_bank as usize] |= 1 << (irq_num & 0x1F);
         
         interface::activate(irq_bank, irq_num);
-        
-        self.enabled[irq_bank as usize] |= 1 << (irq_num & 0x1F);
         //println!("enabled Irq's: {:X}, {:X}, {:X}", self.enabled[0], self.enabled[1], self.enabled[2]);
-        #[cfg(target_arch="arm")]
-        unsafe{ asm!("dmb") };
+        #[cfg(any(target_arch="arm", target_arch="aarch64"))]
+        unsafe{ asm!("dmb sy") };
     }
 
     /// deactivate a specific interrupt from beeing raised. This ensures the handler will also not getting called any
@@ -113,8 +116,8 @@ impl InterruptManager {
         interface::deactivate(irq_bank, irq_num);
         
         self.enabled[irq_bank as usize] &= !(1 << (irq_num & 0x1F));
-        #[cfg(target_arch="arm")]
-        unsafe{ asm!("dmb") };
+        #[cfg(any(target_arch="arm", target_arch="aarch64"))]
+        unsafe{ asm!("dmb sy") };
     }
 }
 
@@ -122,6 +125,115 @@ impl InterruptManager {
  * Functions that need to be exported, this seem not to work if they are part of of a child
  * module, so define them here
  ********************************************************************************************/
+ #[allow(dead_code)]
+#[repr(u64)]
+enum ExceptionType {
+    CurrentElSp0Sync = 0x01,
+    CurrentElSp0Irq  = 0x02,
+    CurrentElSp0Fiq  = 0x03,
+    CurrentElSp0SErr = 0x04,
+
+    CurrentElSpxSync = 0x11,
+    CurrentElSpxIrq  = 0x12,
+    CurrentElSpxFiq  = 0x13,
+    CurrentElSpxSErr = 0x14,
+
+    LowerEl64SpxSync = 0x21,
+    LowerEl64SpxIrq  = 0x22,
+    LowerEl64SpxFiq  = 0x23,
+    LowerEl64SpxSErr = 0x24,
+
+    LowerEl32SpxSync = 0x31,
+    LowerEl32SpxIrq  = 0x32,
+    LowerEl32SpxFiq  = 0x33,
+    LowerEl32SpxSErr = 0x34,
+}
+
+/// The default exception handler.
+/// This is the entry point for any exception taken at any core. The type gives the hint on what
+/// the exyception is about, sync, irq, etc. This entry point is called from the ``ruspiro-boot``
+/// crate when this is used for bootstrapping. Otherwise the custom bootstrapping need to properly
+/// setup the exception table and call this entry point with the required input
+/// 
+#[cfg(target_arch="aarch64")]
+#[no_mangle]
+unsafe fn __exception_handler_default(exception: ExceptionType, _esr: u64, _spsr: u64, _far: u64, _elr: u64) {
+    match exception {
+        ExceptionType::CurrentElSp0Irq => interrupt_handler(),
+        ExceptionType::CurrentElSp0Fiq => interrupt_handler(),
+        ExceptionType::CurrentElSpxIrq => interrupt_handler(),
+        ExceptionType::CurrentElSpxFiq => interrupt_handler(),
+        _ => ()
+    }
+}
+
+
+/// Entry point for interrupt handling. This function dispatches the detected interrupt to the
+/// elsewhere implemented dedicated handlers. Those handlers should be tagged with the ``IrqHandler``
+/// attribute
+fn interrupt_handler() {
+    // first globally store that we are inside an interrupt handler
+    entering_interrupt_handler();
+
+    // now retrieve the pending interrupts
+    let pendings = interface::get_pending_irqs();
+    
+    // from the pending interrupts filter the active ones
+    let active = IRQ_MANAGER.use_for(|mgr| 
+            [
+                mgr.enabled[0] & pendings[0],
+                mgr.enabled[1] & pendings[1],
+                mgr.enabled[2] & pendings[2]
+            ]
+        );
+    
+    // now that we have the active interrupts we can dispatch to the dedicated handlers
+    if active[0] != 0 {
+        // IRQ Bank 1
+        if active[0] & (1 << 1 ) != 0 { __irq_handler__SystemTimer1() }
+        if active[0] & (1 << 3 ) != 0 { __irq_handler__SystemTimer3() }
+        if active[0] & (1 << 8 ) != 0 { __irq_handler__Isp() }
+        if active[0] & (1 << 9 ) != 0 { __irq_handler__Usb() }
+        if active[0] & (1 << 12) != 0 { __irq_handler__CoreSync0() }
+        if active[0] & (1 << 13) != 0 { __irq_handler__CoreSync1() }
+        if active[0] & (1 << 14) != 0 { __irq_handler__CoreSync2() }
+        if active[0] & (1 << 15) != 0 { __irq_handler__CoreSync3() }
+        if active[0] & (1 << 29) != 0 { auxhandler::aux_handler() }
+        if active[0] & (1 << 30) != 0 { __irq_handler__Arm() }
+        if active[0] & (1 << 31) != 0 { __irq_handler__GpuDma() }
+    }
+
+    if active[1] != 0 {
+        // IRQ Bank 2
+        if active[1] & (1 << 49-32) != 0 { __irq_handler__GpioBank0() }
+        if active[1] & (1 << 50-32) != 0 { __irq_handler__GpioBank1() }
+        if active[1] & (1 << 51-32) != 0 { __irq_handler__GpioBank2() }
+        if active[1] & (1 << 52-32) != 0 { __irq_handler__GpioBank3() }
+        if active[1] & (1 << 53-32) != 0 { __irq_handler__I2c() }
+        if active[1] & (1 << 54-32) != 0 { __irq_handler__Spi() }
+        if active[1] & (1 << 55-32) != 0 { __irq_handler__I2sPcm() }
+        if active[1] & (1 << 56-32) != 0 { __irq_handler__Sdio() }
+        if active[1] & (1 << 57-32) != 0 { __irq_handler__Pl011() }
+    }
+
+    if active[2] != 0 {
+        // IRQ Bank Basic
+        if active[2] & (1 << 64-64) != 0 { __irq_handler__ArmTimer() }
+        if active[2] & (1 << 65-64) != 0 { __irq_handler__ArmMailbox() }
+        if active[2] & (1 << 66-64) != 0 { __irq_handler__ArmDoorbell0() }
+        if active[2] & (1 << 67-64) != 0 { __irq_handler__ArmDoorbell1() }
+        if active[2] & (1 << 68-64) != 0 { __irq_handler__ArmGpu0Halted() }
+        if active[2] & (1 << 69-64) != 0 { __irq_handler__ArmGpu1Halted() }
+        if active[2] & (1 << 70-64) != 0 { __irq_handler__ArmIllegalType1() }
+        if active[2] & (1 << 71-64) != 0 { __irq_handler__ArmIllegalType0() }
+        if active[2] & (1 << 72-64) != 0 { __irq_handler__ArmPending1() }
+        if active[2] & (1 << 73-64) != 0 { __irq_handler__ArmPending2() }
+    }
+
+    // when we are done store that we are leaving an interrupt handler
+    leaving_interrupt_handler();
+}
+
 /// The IRQ handling entry point. This entrypoint is maintained by the ``rusprio-boot`` crate and points to
 /// an empty implementation using a linker script "magic". Once interrupts are globally enabled and specific
 /// interrupts has been activated this entry point will be called wheneever an interrupt occurs. The
@@ -129,6 +241,7 @@ impl InterruptManager {
 /// done somewhere else
 #[no_mangle]
 unsafe fn __interrupt_h(_core: u32) {
+    entering_interrupt_handler();
     IRQ_MANAGER.use_for(|mgr| {
         // check wheter the interrupt in a pending register really has been activiated
         let pendings: [u32; 3] = interface::get_pending_irqs();
@@ -182,6 +295,7 @@ unsafe fn __interrupt_h(_core: u32) {
             }
         }
     });
+    leaving_interrupt_handler();
 }
 
 fn set_bits_to_vec(value: u32, base: u8) -> Vec<u8> {
@@ -203,7 +317,7 @@ macro_rules! default_handler_impl {
             #[linkage="weak"]
             #[no_mangle]
             extern "C" fn [<__irq_handler__ $name>](){
-                __irq_handler_Default();
+                //__irq_handler_Default();
             }
         }
     )*};

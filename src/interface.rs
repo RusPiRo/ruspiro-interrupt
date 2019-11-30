@@ -22,7 +22,8 @@ pub(crate) fn initialize() {
     IRQ_DISABLE_1::Register.set(0xFFFF_FFFF);
     IRQ_DISABLE_2::Register.set(0xFFFF_FFFF);
     IRQ_DISABLE_B::Register.set(0xFFFF_FFFF);
-    unsafe{ asm!("dmb") };
+
+    unsafe{ asm!("dmb sy") };
 
     // set the routing of GPU interrupts to core 0
     GPU_INT_ROUTING::Register.set(0);
@@ -66,17 +67,17 @@ pub(crate) fn get_pending_irqs() -> [u32; 3] {
 }
 
 define_registers! [
-    GPU_INT_ROUTING: ReadWrite<u32> @ ARM_CORE_BASE + 0x20C,
+    GPU_INT_ROUTING: ReadWrite<u32> @ ARM_CORE_BASE + 0x00C,
 
-    CORE_MB_INT_CONTROL0: ReadWrite<u32> @ ARM_CORE_BASE + 0x250,
-    CORE_MB_INT_CONTROL1: ReadWrite<u32> @ ARM_CORE_BASE + 0x254,
-    CORE_MB_INT_CONTROL2: ReadWrite<u32> @ ARM_CORE_BASE + 0x258,
-    CORE_MB_INT_CONTROL3: ReadWrite<u32> @ ARM_CORE_BASE + 0x25C,
+    CORE_MB_INT_CONTROL0: ReadWrite<u32> @ ARM_CORE_BASE + 0x050,
+    CORE_MB_INT_CONTROL1: ReadWrite<u32> @ ARM_CORE_BASE + 0x054,
+    CORE_MB_INT_CONTROL2: ReadWrite<u32> @ ARM_CORE_BASE + 0x058,
+    CORE_MB_INT_CONTROL3: ReadWrite<u32> @ ARM_CORE_BASE + 0x05C,
 
-    CORE_IRQ_PENDING0: ReadWrite<u32> @ ARM_CORE_BASE + 0x260,
-    CORE_IRQ_PENDING1: ReadWrite<u32> @ ARM_CORE_BASE + 0x264,
-    CORE_IRQ_PENDING2: ReadWrite<u32> @ ARM_CORE_BASE + 0x268,
-    CORE_IRQ_PENDING3: ReadWrite<u32> @ ARM_CORE_BASE + 0x26C,
+    CORE_IRQ_PENDING0: ReadWrite<u32> @ ARM_CORE_BASE + 0x060,
+    CORE_IRQ_PENDING1: ReadWrite<u32> @ ARM_CORE_BASE + 0x064,
+    CORE_IRQ_PENDING2: ReadWrite<u32> @ ARM_CORE_BASE + 0x068,
+    CORE_IRQ_PENDING3: ReadWrite<u32> @ ARM_CORE_BASE + 0x06C,
 
     IRQ_PENDING_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x200,
     IRQ_PENDING_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x204,
