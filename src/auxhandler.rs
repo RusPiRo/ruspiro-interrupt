@@ -1,18 +1,18 @@
-/*********************************************************************************************************************** 
+/***********************************************************************************************************************
  * Copyright (c) 2019 by the authors
- * 
- * Author: André Borrmann 
+ *
+ * Author: André Borrmann
  * License: Apache License 2.0
  **********************************************************************************************************************/
 //! # Aux interrupt line handler
-//! 
+//!
 //! The Aux interrupt line is shared between Uart1, Spi1 and Spi2. This handler branches to the specific handler
 //! implementation based on the interrupt source.
-//! 
+//!
 
 use ruspiro_register::define_mmio_register;
 
-#[cfg(feature="ruspiro_pi3")]
+#[cfg(feature = "ruspiro_pi3")]
 const PERIPHERAL_BASE: u32 = 0x3F00_0000;
 
 pub(crate) fn aux_handler() {
