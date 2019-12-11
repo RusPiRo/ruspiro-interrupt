@@ -10,7 +10,7 @@
 //! implementation based on the interrupt source.
 //! 
 
-use ruspiro_register::define_registers;
+use ruspiro_register::define_mmio_register;
 
 #[cfg(feature="ruspiro_pi3")]
 const PERIPHERAL_BASE: u32 = 0x3F00_0000;
@@ -30,10 +30,10 @@ pub(crate) fn aux_handler() {
     }
 }
 
-define_registers! [
-    AUX_IRQ: ReadWrite<u32> @ PERIPHERAL_BASE + 0x0021_5000 => [
+define_mmio_register! [
+    AUX_IRQ<ReadWrite<u32>@(PERIPHERAL_BASE + 0x0021_5000)> {
         SPI2    OFFSET(2),
         SPI1    OFFSET(1),
         UART1   OFFSET(0)
-    ]
+    }
 ];

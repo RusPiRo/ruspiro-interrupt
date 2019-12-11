@@ -7,7 +7,7 @@
 
 //! # Internal interrupt interface implementation
 //! 
-use ruspiro_register::define_registers;
+use ruspiro_register::define_mmio_register;
 
 #[cfg(feature="ruspiro_pi3")]
 const PERIPHERAL_BASE: u32 = 0x3F00_0000;
@@ -66,30 +66,30 @@ pub(crate) fn get_pending_irqs() -> [u32; 3] {
     pendings
 }
 
-define_registers! [
-    GPU_INT_ROUTING: ReadWrite<u32> @ ARM_CORE_BASE + 0x00C,
+define_mmio_register! [
+    GPU_INT_ROUTING<ReadWrite<u32>@(ARM_CORE_BASE + 0x00C)>,
 
-    CORE_MB_INT_CONTROL0: ReadWrite<u32> @ ARM_CORE_BASE + 0x050,
-    CORE_MB_INT_CONTROL1: ReadWrite<u32> @ ARM_CORE_BASE + 0x054,
-    CORE_MB_INT_CONTROL2: ReadWrite<u32> @ ARM_CORE_BASE + 0x058,
-    CORE_MB_INT_CONTROL3: ReadWrite<u32> @ ARM_CORE_BASE + 0x05C,
+    CORE_MB_INT_CONTROL0<ReadWrite<u32>@(ARM_CORE_BASE + 0x050)>,
+    CORE_MB_INT_CONTROL1<ReadWrite<u32>@(ARM_CORE_BASE + 0x054)>,
+    CORE_MB_INT_CONTROL2<ReadWrite<u32>@(ARM_CORE_BASE + 0x058)>,
+    CORE_MB_INT_CONTROL3<ReadWrite<u32>@(ARM_CORE_BASE + 0x05C)>,
 
-    CORE_IRQ_PENDING0: ReadWrite<u32> @ ARM_CORE_BASE + 0x060,
-    CORE_IRQ_PENDING1: ReadWrite<u32> @ ARM_CORE_BASE + 0x064,
-    CORE_IRQ_PENDING2: ReadWrite<u32> @ ARM_CORE_BASE + 0x068,
-    CORE_IRQ_PENDING3: ReadWrite<u32> @ ARM_CORE_BASE + 0x06C,
+    CORE_IRQ_PENDING0<ReadWrite<u32>@(ARM_CORE_BASE + 0x060)>,
+    CORE_IRQ_PENDING1<ReadWrite<u32>@(ARM_CORE_BASE + 0x064)>,
+    CORE_IRQ_PENDING2<ReadWrite<u32>@(ARM_CORE_BASE + 0x068)>,
+    CORE_IRQ_PENDING3<ReadWrite<u32>@(ARM_CORE_BASE + 0x06C)>,
 
-    IRQ_PENDING_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x200,
-    IRQ_PENDING_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x204,
-    IRQ_PENDING_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x208,
+    IRQ_PENDING_B<ReadWrite<u32>@(ARM_IRQ_BASE + 0x200)>,
+    IRQ_PENDING_1<ReadWrite<u32>@(ARM_IRQ_BASE + 0x204)>,
+    IRQ_PENDING_2<ReadWrite<u32>@(ARM_IRQ_BASE + 0x208)>,
     
-    FIQ_CONTROL: ReadWrite<u32> @ ARM_IRQ_BASE + 0x20C,
+    FIQ_CONTROL<ReadWrite<u32>@(ARM_IRQ_BASE + 0x20C)>,
 
-    IRQ_ENABLE_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x210,
-    IRQ_ENABLE_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x214,
-    IRQ_ENABLE_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x218,
+    IRQ_ENABLE_1<ReadWrite<u32>@(ARM_IRQ_BASE + 0x210)>,
+    IRQ_ENABLE_2<ReadWrite<u32>@(ARM_IRQ_BASE + 0x214)>,
+    IRQ_ENABLE_B<ReadWrite<u32>@(ARM_IRQ_BASE + 0x218)>,
 
-    IRQ_DISABLE_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x21C,
-    IRQ_DISABLE_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x220,
-    IRQ_DISABLE_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x224
+    IRQ_DISABLE_1<ReadWrite<u32>@(ARM_IRQ_BASE + 0x21C)>,
+    IRQ_DISABLE_2<ReadWrite<u32>@(ARM_IRQ_BASE + 0x220)>,
+    IRQ_DISABLE_B<ReadWrite<u32>@(ARM_IRQ_BASE + 0x224)>
 ];

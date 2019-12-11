@@ -10,9 +10,9 @@
 
 //! # Interrupt Core functions
 //! 
-//! Core functions to enable/disable interupts globally. This is splitted from the
+//! Core functions to enable/disable interrupts globally. This is splitted from the
 //! [``ruspiro-interrupt``](https://crates.io/crates/ruspiro-interrupt) crate to remove circular dependencies between
-//! the interrupt crate others (e.g. ``ruspiro-singleton``) crate.
+//! the interrupt crate and others (e.g. ``ruspiro-singleton``).
 
 use core::sync::atomic::{AtomicBool, Ordering};
 
