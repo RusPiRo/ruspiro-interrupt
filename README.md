@@ -17,11 +17,12 @@ script providing all the necessary linker symbols and entrypoints calling into t
 To use the crate just add the following dependency to your ``Cargo.toml`` file:
 ```
 [dependencies]
-ruspiro-interrupt = "0.2"
+ruspiro-interrupt = "0.3"
 ```
 
 Once done the access to the features/attribute of the interrupt crate is available in your rust files like so:
 ```
+extern crate ruspiro_interrupt; // needed for proper linking of weak defined functions
 use ruspiro-interrupt::*;
 
 #[IrqHandler(<irq-type-name>)]

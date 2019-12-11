@@ -13,7 +13,7 @@ Core interrupt functions to globally enable/disable interrupts to be triggered o
 To use the crate just add the following dependency to your ``Cargo.toml`` file:
 ```
 [dependencies]
-ruspiro-interrupt-core = "0.2"
+ruspiro-interrupt-core = "0.3"
 ```
 
 Once done the access to the functions to enable/disable interrupts is available in your rust files like so:

@@ -25,10 +25,14 @@ static IRQ_STATE: AtomicBool = AtomicBool::new(false);
 // last FAULT/FIQ state before globally disabling fast interrupts
 static FAULT_STATE: AtomicBool = AtomicBool::new(false);
 
+/// Function used to store a cross core global flag that an interrupt is currently
+/// handled
 pub fn entering_interrupt_handler() {
     IRQ_HANDLER_ACTIVE.store(true, Ordering::SeqCst);
 }
 
+/// Function used to clear a cross core global flag that no interrupt is currently
+/// handled
 pub fn leaving_interrupt_handler() {
     IRQ_HANDLER_ACTIVE.store(false, Ordering::SeqCst);
 }

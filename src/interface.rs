@@ -23,6 +23,7 @@ pub(crate) fn initialize() {
     IRQ_DISABLE_2::Register.set(0xFFFF_FFFF);
     IRQ_DISABLE_B::Register.set(0xFFFF_FFFF);
 
+    #[cfg(any(target_arch="arm", target_arch="aarch64"))]
     unsafe{ asm!("dmb sy") };
 
     // set the routing of GPU interrupts to core 0

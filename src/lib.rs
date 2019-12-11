@@ -16,7 +16,7 @@
 //! 
 //! # Usage
 //! 
-//! ```
+//! ```no_run
 //! extern crate ruspiro_interrupt; // <- this kind of usage is VERY IMPORTANT to ensure linking works as expected!
 //! use ruspiro_interrupt::*;
 //! 
@@ -27,10 +27,9 @@
 //!     // implement stuff that shall be executed if the interrupt is raised...
 //!     // be careful when this code uses spinlocks as this might lead to dead-locks if the 
 //!     // executing code interrupted currently helds a lock the code inside this handler tries to aquire the same one
-//!     println!("timer interrupt raised");
 //! }
 //! 
-//! fn doc() {
+//! fn main() {
 //!     // as we have an interrupt handler defined we need to enable interrupt handling globally as well
 //!     // as the specific interrupt we have a handler implemented for
 //!     IRQ_MANAGER.take_for(|irq_mgr| {
@@ -45,12 +44,22 @@
 //! 
 //! In some cases the interrupt type/line is shared between different sources. In those cases a handler need to be
 //! implemented for the specific interrupt source. The source is given in the custom attribute like this:
-//! ```
+//! 
+//! ```no_run
+//! extern crate ruspiro_interrupt; // <- this kind of usage is VERY IMPORTANT to ensure linking works as expected!
+//! use ruspiro_interrupt::*;
+//! 
 //! #[IrqHandler(Aux, Uart1)]
 //! fn aux_uart1_handler() {
 //!     // implement Uart1 interrupt handler here
 //! }
+//! 
+//! # fn main() {
+//! # }
 //! ```
+//! 
+//! # Limitations
+//! 
 //! However, only a limited ammount of shared interrupts is available with the current version - which is only the **Aux**
 //! interrupt at the moment.
 //! 
