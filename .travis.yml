@@ -20,7 +20,7 @@ matrix:
         - rustup target add aarch64-unknown-linux-gnu
         - rustup component add rust-src
         - sudo chmod ugo+x build.sh
-      script: sed -i 's/path.*=.*\".*", version/version/g' Cargo.toml && ./build.sh 64 travis
+      script: sed -i 's/path.*=.*\"\.{2}.*", version/version/g' Cargo.toml && ./build.sh 64 travis
 
     - name: "build 32Bit"
       install:
