@@ -297,34 +297,34 @@ fn interrupt_handler() {
 
     if active[2] != 0 {
         // IRQ Bank Basic
-        if active[2] & (1 << 64 - 64) != 0 {
+        if active[2] & (1 << (64 - 64)) != 0 {
             __irq_handler__ArmTimer()
         }
-        if active[2] & (1 << 65 - 64) != 0 {
+        if active[2] & (1 << (65 - 64)) != 0 {
             __irq_handler__ArmMailbox()
         }
-        if active[2] & (1 << 66 - 64) != 0 {
+        if active[2] & (1 << (66 - 64)) != 0 {
             __irq_handler__ArmDoorbell0()
         }
-        if active[2] & (1 << 67 - 64) != 0 {
+        if active[2] & (1 << (67 - 64)) != 0 {
             __irq_handler__ArmDoorbell1()
         }
-        if active[2] & (1 << 68 - 64) != 0 {
+        if active[2] & (1 << (68 - 64)) != 0 {
             __irq_handler__ArmGpu0Halted()
         }
-        if active[2] & (1 << 69 - 64) != 0 {
+        if active[2] & (1 << (69 - 64)) != 0 {
             __irq_handler__ArmGpu1Halted()
         }
-        if active[2] & (1 << 70 - 64) != 0 {
+        if active[2] & (1 << (70 - 64)) != 0 {
             __irq_handler__ArmIllegalType1()
         }
-        if active[2] & (1 << 71 - 64) != 0 {
+        if active[2] & (1 << (71 - 64)) != 0 {
             __irq_handler__ArmIllegalType0()
         }
-        if active[2] & (1 << 72 - 64) != 0 {
+        if active[2] & (1 << (72 - 64)) != 0 {
             __irq_handler__ArmPending1()
         }
-        if active[2] & (1 << 73 - 64) != 0 {
+        if active[2] & (1 << (73 - 64)) != 0 {
             __irq_handler__ArmPending2()
         }
     }
