@@ -22,7 +22,7 @@
 //!
 //! #[IrqHandler(ArmTimer)]
 //! fn timer_handler() {
-//!     // TODO: acknowledge the irq
+//!     // IMPORTANT: acknowledge the irq !
 //!
 //!     // implement stuff that shall be executed if the interrupt is raised...
 //!     // be careful when this code uses spinlocks as this might lead to dead-locks if the
@@ -137,7 +137,7 @@ impl InterruptManager {
  * module, so define them here
  ********************************************************************************************/
 #[allow(dead_code)]
-#[repr(u64)]
+#[repr(u32)]
 enum ExceptionType {
     CurrentElSp0Sync = 0x01,
     CurrentElSp0Irq = 0x02,
@@ -159,12 +159,12 @@ enum ExceptionType {
     LowerEl32SpxFiq = 0x33,
     LowerEl32SpxSErr = 0x34,
 
-    A32UndefInstruction  = 0x50,
+    A32UndefInstruction = 0x50,
     A32SoftwareInterrupt = 0x51,
-    A32PrefetchAbort     = 0x52,
-    A32DataAbort         = 0x53,
-    A32Irq               = 0x54,
-    A32Fiq               = 0x55
+    A32PrefetchAbort = 0x52,
+    A32DataAbort = 0x53,
+    A32Irq = 0x54,
+    A32Fiq = 0x55,
 }
 
 /// The default exception handler.
