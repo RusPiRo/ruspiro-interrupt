@@ -1,11 +1,13 @@
 [package]
 name = "ruspiro-interrupt"
 authors = ["Andre Borrmann <pspwizard@gmx.de>"]
-version = "0.2.1" # remember to update html_root_url
-description = "Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts."
+version = "0.3.0" # remember to update html_root_url
+description = """
+Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts.
+"""
 license = "Apache-2.0"
-repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v0.2.1"
-documentation = "https://docs.rs/ruspiro-interrupt/0.2.1"
+repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v0.3.0"
+documentation = "https://docs.rs/ruspiro-interrupt/0.3.0"
 readme = "README.md"
 keywords = ["RusPiRo", "baremetal", "raspberrypi", "interrupt"]
 categories = ["no-std", "embedded"]
@@ -19,10 +21,10 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 paste = "0.1.5"
-ruspiro-register = "0.1"
-ruspiro-interrupt-core = { path = "./core", version = "0.2" }
+ruspiro-register = { path = "../register", version = "0.3" }
+ruspiro-interrupt-core = { path = "./core", version = "0.3" }
 ruspiro-interrupt-macros = { path = "./macros", version = "0.2" }
-ruspiro-singleton = "0.2"
+ruspiro-singleton = { path = "../singleton", version = "0.3" }
 
 [features]
 default = ["ruspiro_pi3"]

@@ -1,18 +1,18 @@
-/*********************************************************************************************************************** 
+/***********************************************************************************************************************
  * Copyright (c) 2019 by the authors
- * 
- * Author: André Borrmann 
+ *
+ * Author: André Borrmann
  * License: Apache License 2.0
  **********************************************************************************************************************/
 
 //! # Internal interrupt interface implementation
-//! 
-use ruspiro_register::define_registers;
+//!
+use ruspiro_register::define_mmio_register;
 
-#[cfg(feature="ruspiro_pi3")]
+#[cfg(feature = "ruspiro_pi3")]
 const PERIPHERAL_BASE: u32 = 0x3F00_0000;
 
-#[cfg(feature="ruspiro_pi3")]
+#[cfg(feature = "ruspiro_pi3")]
 const ARM_CORE_BASE: u32 = 0x4000_0000;
 
 const ARM_IRQ_BASE: u32 = PERIPHERAL_BASE + 0x0000_B000;
@@ -22,7 +22,11 @@ pub(crate) fn initialize() {
     IRQ_DISABLE_1::Register.set(0xFFFF_FFFF);
     IRQ_DISABLE_2::Register.set(0xFFFF_FFFF);
     IRQ_DISABLE_B::Register.set(0xFFFF_FFFF);
-    unsafe{ asm!("dmb") };
+
+    #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+    unsafe {
+        asm!("dmb sy")
+    };
 
     // set the routing of GPU interrupts to core 0
     GPU_INT_ROUTING::Register.set(0);
@@ -57,38 +61,38 @@ pub(crate) fn deactivate(bank: u32, irq_num: u32) {
 
 pub(crate) fn get_pending_irqs() -> [u32; 3] {
     let pendings: [u32; 3] = [
-            IRQ_PENDING_1::Register.get(),
-            IRQ_PENDING_2::Register.get(),
-            IRQ_PENDING_B::Register.get(),
-        ];
+        IRQ_PENDING_1::Register.get(),
+        IRQ_PENDING_2::Register.get(),
+        IRQ_PENDING_B::Register.get(),
+    ];
 
     pendings
 }
 
-define_registers! [
-    GPU_INT_ROUTING: ReadWrite<u32> @ ARM_CORE_BASE + 0x20C,
+define_mmio_register! [
+    GPU_INT_ROUTING<ReadWrite<u32>@(ARM_CORE_BASE + 0x00C)>,
 
-    CORE_MB_INT_CONTROL0: ReadWrite<u32> @ ARM_CORE_BASE + 0x250,
-    CORE_MB_INT_CONTROL1: ReadWrite<u32> @ ARM_CORE_BASE + 0x254,
-    CORE_MB_INT_CONTROL2: ReadWrite<u32> @ ARM_CORE_BASE + 0x258,
-    CORE_MB_INT_CONTROL3: ReadWrite<u32> @ ARM_CORE_BASE + 0x25C,
+    CORE_MB_INT_CONTROL0<ReadWrite<u32>@(ARM_CORE_BASE + 0x050)>,
+    CORE_MB_INT_CONTROL1<ReadWrite<u32>@(ARM_CORE_BASE + 0x054)>,
+    CORE_MB_INT_CONTROL2<ReadWrite<u32>@(ARM_CORE_BASE + 0x058)>,
+    CORE_MB_INT_CONTROL3<ReadWrite<u32>@(ARM_CORE_BASE + 0x05C)>,
 
-    CORE_IRQ_PENDING0: ReadWrite<u32> @ ARM_CORE_BASE + 0x260,
-    CORE_IRQ_PENDING1: ReadWrite<u32> @ ARM_CORE_BASE + 0x264,
-    CORE_IRQ_PENDING2: ReadWrite<u32> @ ARM_CORE_BASE + 0x268,
-    CORE_IRQ_PENDING3: ReadWrite<u32> @ ARM_CORE_BASE + 0x26C,
+    CORE_IRQ_PENDING0<ReadWrite<u32>@(ARM_CORE_BASE + 0x060)>,
+    CORE_IRQ_PENDING1<ReadWrite<u32>@(ARM_CORE_BASE + 0x064)>,
+    CORE_IRQ_PENDING2<ReadWrite<u32>@(ARM_CORE_BASE + 0x068)>,
+    CORE_IRQ_PENDING3<ReadWrite<u32>@(ARM_CORE_BASE + 0x06C)>,
 
-    IRQ_PENDING_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x200,
-    IRQ_PENDING_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x204,
-    IRQ_PENDING_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x208,
+    IRQ_PENDING_B<ReadWrite<u32>@(ARM_IRQ_BASE + 0x200)>,
+    IRQ_PENDING_1<ReadWrite<u32>@(ARM_IRQ_BASE + 0x204)>,
+    IRQ_PENDING_2<ReadWrite<u32>@(ARM_IRQ_BASE + 0x208)>,
     
-    FIQ_CONTROL: ReadWrite<u32> @ ARM_IRQ_BASE + 0x20C,
+    FIQ_CONTROL<ReadWrite<u32>@(ARM_IRQ_BASE + 0x20C)>,
 
-    IRQ_ENABLE_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x210,
-    IRQ_ENABLE_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x214,
-    IRQ_ENABLE_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x218,
+    IRQ_ENABLE_1<ReadWrite<u32>@(ARM_IRQ_BASE + 0x210)>,
+    IRQ_ENABLE_2<ReadWrite<u32>@(ARM_IRQ_BASE + 0x214)>,
+    IRQ_ENABLE_B<ReadWrite<u32>@(ARM_IRQ_BASE + 0x218)>,
 
-    IRQ_DISABLE_1: ReadWrite<u32> @ ARM_IRQ_BASE + 0x21C,
-    IRQ_DISABLE_2: ReadWrite<u32> @ ARM_IRQ_BASE + 0x220,
-    IRQ_DISABLE_B: ReadWrite<u32> @ ARM_IRQ_BASE + 0x224
+    IRQ_DISABLE_1<ReadWrite<u32>@(ARM_IRQ_BASE + 0x21C)>,
+    IRQ_DISABLE_2<ReadWrite<u32>@(ARM_IRQ_BASE + 0x220)>,
+    IRQ_DISABLE_B<ReadWrite<u32>@(ARM_IRQ_BASE + 0x224)>
 ];
