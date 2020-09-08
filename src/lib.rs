@@ -6,7 +6,7 @@
  **********************************************************************************************************************/
 #![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/0.3.0")]
 #![no_std]
-#![feature(asm)]
+#![feature(llvm_asm)]
 #![feature(linkage)]
 
 //! # Interrupt handler for Raspberry Pi
@@ -112,7 +112,7 @@ impl InterruptManager {
         //println!("enabled Irq's: {:X}, {:X}, {:X}", self.enabled[0], self.enabled[1], self.enabled[2]);
         #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
         unsafe {
-            asm!("dmb sy")
+            llvm_asm!("dmb sy")
         };
     }
 
@@ -127,7 +127,7 @@ impl InterruptManager {
         self.enabled[irq_bank as usize] &= !(1 << (irq_num & 0x1F));
         #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
         unsafe {
-            asm!("dmb sy")
+            llvm_asm!("dmb sy")
         };
     }
 }

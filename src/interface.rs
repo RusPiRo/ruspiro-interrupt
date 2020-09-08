@@ -25,7 +25,7 @@ pub(crate) fn initialize() {
 
     #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
     unsafe {
-        asm!("dmb sy")
+        llvm_asm!("dmb sy")
     };
 
     // set the routing of GPU interrupts to core 0
