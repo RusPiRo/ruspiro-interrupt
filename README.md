@@ -15,13 +15,15 @@ script providing all the necessary linker symbols and entrypoints calling into t
 
 ## Usage
 To use the crate just add the following dependency to your ``Cargo.toml`` file:
-```
+
+```toml
 [dependencies]
 ruspiro-interrupt = "0.3"
 ```
 
 Once done the access to the features/attribute of the interrupt crate is available in your rust files like so:
-```
+
+```rust
 extern crate ruspiro_interrupt; // needed for proper linking of weak defined functions
 use ruspiro-interrupt::*;
 
@@ -32,7 +34,8 @@ unsafe fn my_handler() {
 ```
 
 In rare cases the interrupt line is shared for different sources, in this case the attribute need to specify the source:
-```
+
+```rust
 #[IrqHandler(<irq-type-name>, <source>)]
 unsafe fn my_handler_for_source() {
 
