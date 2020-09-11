@@ -4,7 +4,7 @@
  * Author: André Borrmann
  * License: Apache License 2.0
  **********************************************************************************************************************/
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt-core/0.3.0")]
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt-core/0.3.1")]
 #![no_std]
 #![feature(llvm_asm)]
 

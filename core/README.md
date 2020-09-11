@@ -8,16 +8,18 @@ Core interrupt functions to globally enable/disable interrupts to be triggered o
 [![Documentation](https://docs.rs/ruspiro-interrupt-core/badge.svg)](https://docs.rs/ruspiro-interrupt-core)
 [![License](https://img.shields.io/crates/l/ruspiro-interrupt-core.svg)](https://github.com/RusPiRo/ruspiro-interrupt-core#license)
 
-
 ## Usage
+
 To use the crate just add the following dependency to your ``Cargo.toml`` file:
-```
+
+```toml
 [dependencies]
 ruspiro-interrupt-core = "0.3"
 ```
 
 Once done the access to the functions to enable/disable interrupts is available in your rust files like so:
-```
+
+```rust
 use ruspiro_interrupt_core::*;
 
 fn demo() {
@@ -29,4 +31,5 @@ fn demo() {
 ```
 
 ## License
+
 Licensed under Apache License, Version 2.0, ([LICENSE](LICENSE) or http://www.apache.org/licenses/LICENSE-2.0)
