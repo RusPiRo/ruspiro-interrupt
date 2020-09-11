@@ -266,31 +266,31 @@ fn interrupt_handler() {
 
     if active[1] != 0 {
         // IRQ Bank 2
-        if active[1] & (1 << 49 - 32) != 0 {
+        if active[1] & (1 << (49 - 32)) != 0 {
             __irq_handler__GpioBank0()
         }
-        if active[1] & (1 << 50 - 32) != 0 {
+        if active[1] & (1 << (50 - 32)) != 0 {
             __irq_handler__GpioBank1()
         }
-        if active[1] & (1 << 51 - 32) != 0 {
+        if active[1] & (1 << (51 - 32)) != 0 {
             __irq_handler__GpioBank2()
         }
-        if active[1] & (1 << 52 - 32) != 0 {
+        if active[1] & (1 << (52 - 32)) != 0 {
             __irq_handler__GpioBank3()
         }
-        if active[1] & (1 << 53 - 32) != 0 {
+        if active[1] & (1 << (53 - 32)) != 0 {
             __irq_handler__I2c()
         }
-        if active[1] & (1 << 54 - 32) != 0 {
+        if active[1] & (1 << (54 - 32)) != 0 {
             __irq_handler__Spi()
         }
-        if active[1] & (1 << 55 - 32) != 0 {
+        if active[1] & (1 << (55 - 32)) != 0 {
             __irq_handler__I2sPcm()
         }
-        if active[1] & (1 << 56 - 32) != 0 {
+        if active[1] & (1 << (56 - 32)) != 0 {
             __irq_handler__Sdio()
         }
-        if active[1] & (1 << 57 - 32) != 0 {
+        if active[1] & (1 << (57 - 32)) != 0 {
             __irq_handler__Pl011()
         }
     }
