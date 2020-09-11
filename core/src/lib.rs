@@ -6,7 +6,7 @@
  **********************************************************************************************************************/
 #![doc(html_root_url = "https://docs.rs/ruspiro-interrupt-core/0.3.0")]
 #![no_std]
-#![feature(asm)]
+#![feature(llvm_asm)]
 
 //! # Interrupt Core functions
 //!
@@ -76,14 +76,14 @@ pub fn re_enable_interrupts() {
 pub fn enable_irq() {
     #[cfg(target_arch = "arm")]
     unsafe {
-        asm!(
+        llvm_asm!(
             "cpsie i
               isb"
         ) // as per ARM spec the ISB ensures triggering pending interrupts
     };
     #[cfg(target_arch = "aarch64")]
     unsafe {
-        asm!(
+        llvm_asm!(
             "msr daifclr, #2
               isb"
         ) // as per ARM spec the ISB ensures triggering pending interrupts
@@ -99,14 +99,14 @@ fn re_enable_irq() {
     if state {
         #[cfg(target_arch = "arm")]
         unsafe {
-            asm!(
+            llvm_asm!(
                 "cpsie i
                   isb"
             ) // as per ARM spec the ISB ensures triggering pending interrupts
         };
         #[cfg(target_arch = "aarch64")]
         unsafe {
-            asm!(
+            llvm_asm!(
                 "msr daifclr, #2
                   isb"
             ) // as per ARM spec the ISB ensures triggering pending interrupts
@@ -118,14 +118,14 @@ fn re_enable_irq() {
 pub fn enable_fiq() {
     #[cfg(target_arch = "arm")]
     unsafe {
-        asm!(
+        llvm_asm!(
             "cpsie f
               isb"
         ) // as per ARM spec the ISB ensures triggering pending interrupts
     };
     #[cfg(target_arch = "aarch64")]
     unsafe {
-        asm!(
+        llvm_asm!(
             "msr daifclr, #1
               isb"
         ) // as per ARM spec the ISB ensures triggering pending interrupts
@@ -141,14 +141,14 @@ fn re_enable_fiq() {
     if state {
         #[cfg(target_arch = "arm")]
         unsafe {
-            asm!(
+            llvm_asm!(
                 "cpsie f
                 isb"
             ) // as per ARM spec the ISB ensures triggering pending interrupts
         };
         #[cfg(target_arch = "aarch64")]
         unsafe {
-            asm!(
+            llvm_asm!(
                 "msr daifclr, #1
                 isb"
             ) // as per ARM spec the ISB ensures triggering pending interrupts
@@ -165,11 +165,11 @@ pub fn disable_irq() {
 
     #[cfg(target_arch = "arm")]
     unsafe {
-        asm!("cpsid i")
+        llvm_asm!("cpsid i")
     };
     #[cfg(target_arch = "aarch64")]
     unsafe {
-        asm!("msr daifset, #2")
+        llvm_asm!("msr daifset, #2")
     };
 
     // store the last interrupt state after interrupts have been
@@ -186,11 +186,11 @@ pub fn disable_fiq() {
 
     #[cfg(target_arch = "arm")]
     unsafe {
-        asm!("cpsid f")
+        llvm_asm!("cpsid f")
     };
     #[cfg(target_arch = "aarch64")]
     unsafe {
-        asm!("msr daifset, #1")
+        llvm_asm!("msr daifset, #1")
     };
 
     // store the last interrupt state after interrupts have been
@@ -203,13 +203,13 @@ fn get_interrupt_state() -> u32 {
     #[cfg(target_arch = "arm")]
     unsafe {
         let state: u32;
-        asm!("MRS $0, CPSR":"=r"(state):::"volatile");
+        llvm_asm!("MRS $0, CPSR":"=r"(state):::"volatile");
         return state & 0x80;
     }
     #[cfg(target_arch = "aarch64")]
     unsafe {
         let state: u32;
-        asm!("MRS $0, DAIF":"=r"(state):::"volatile");
+        llvm_asm!("MRS $0, DAIF":"=r"(state):::"volatile");
         // irq enabled if mask bit was not set
         return !((state >> 6) & 0x2);
     }
@@ -222,13 +222,13 @@ fn get_fault_state() -> u32 {
     #[cfg(target_arch = "arm")]
     unsafe {
         let state: u32;
-        asm!("MRS $0, CPSR":"=r"(state):::"volatile");
+        llvm_asm!("MRS $0, CPSR":"=r"(state):::"volatile");
         return state & 0x40;
     }
     #[cfg(target_arch = "aarch64")]
     unsafe {
         let state: u32;
-        asm!("MRS $0, DAIF":"=r"(state):::"volatile");
+        llvm_asm!("MRS $0, DAIF":"=r"(state):::"volatile");
         // fiq enabled if mask bit was not set
         return !((state >> 6) & 0x1);
     }
