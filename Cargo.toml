@@ -1,18 +1,19 @@
 [package]
 name = "ruspiro-interrupt"
 authors = ["Andre Borrmann <pspwizard@gmx.de>"]
-version = "0.3.1" # remember to update html_root_url
+version = "0.4.0" # remember to update html_root_url
 description = """
 Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts.
 """
 license = "Apache-2.0"
-repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v0.3.1"
-documentation = "https://docs.rs/ruspiro-interrupt/0.3.1"
+repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v||VERSION||"
+documentation = "https://docs.rs/ruspiro-interrupt/||VERSION||"
 readme = "README.md"
 keywords = ["RusPiRo", "baremetal", "raspberrypi", "interrupt"]
 categories = ["no-std", "embedded"]
 edition = "2018"
 exclude = [".travis.yml", "Makefile.toml"]
+links = "ruspiro_interrupt"
 
 [badges]
 travis-ci = { repository = "RusPiRo/ruspiro-interrupt", branch = "master" }
@@ -21,18 +22,24 @@ maintenance = { status = "actively-developed" }
 [lib]
 
 [dependencies]
-paste = "1.0.0"
-ruspiro-register = "0.4"
+# get functions like memset, memcpy into the binary
+paste = "1.0"
+futures-util = { version = "0.3", default-features = false }
+ruspiro-mmio-register = "0.1"
 ruspiro-interrupt-core = "0.3"
-ruspiro-interrupt-macros = "0.2"
-ruspiro-singleton = "0.3"
+ruspiro-interrupt-macros = { path = "./macros" } #"0.3"
+ruspiro-singleton = "0.4"
+ruspiro-console = { git = "https://github.com/RusPiRo/ruspiro-console.git", branch = "development" }
+ruspiro-channel = { git = "https://github.com/RusPiRo/ruspiro-channel.git", branch = "development" }
+
 
 [features]
-default = ["ruspiro_pi3"]
 ruspiro_pi3 = []
+async = ["ruspiro-interrupt-macros/async", "ruspiro-channel/async" ]
 
 [patch.crates-io]
-ruspiro-register = { git = "https://github.com/RusPiRo/ruspiro-register.git" }
+ruspiro-mmio-register = { git = "https://github.com/RusPiRo/ruspiro-mmio-register.git" }
 ruspiro-singleton = { git ="https://github.com/RusPiRo/ruspiro-singleton.git" }
+ruspiro-interrupt = { path = "." }
 ruspiro-interrupt-core = { path = "./core" }
 ruspiro-interrupt-macros = { path = "./macros" }
