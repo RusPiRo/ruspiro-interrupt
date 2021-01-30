@@ -14,27 +14,15 @@
 //!
 //! ```no_run
 //! extern crate ruspiro_interrupt; // <- this kind of usage is VERY IMPORTANT to ensure linking works as expected!
-//! use ruspiro_interrupt::*;
+//! use ruspiro_interrupt::{self as irq, IrqHandler, IsrSender, isr_channel};
 //!
 //! #[IrqHandler(ArmTimer)]
-//! fn timer_handler() {
+//! fn timer_handler(tx: Option<IsrSender<Box<dyn Any>>>) {
 //!     // IMPORTANT: acknowledge the irq !
 //!
 //!     // implement stuff that shall be executed if the interrupt is raised...
 //!     // be careful when this code uses spinlocks as this might lead to dead-locks if the
 //!     // executing code interrupted currently helds a lock the code inside this handler tries to aquire the same one
-//! }
-//!
-//! fn main() {
-//!     // as we have an interrupt handler defined we need to enable interrupt handling globally as well
-//!     // as the specific interrupt we have a handler implemented for
-//!     IRQ_MANAGER.take_for(|irq_mgr| {
-//!         irq_mgr.initialize();
-//!         irq_mgr.activate(Interrupt::ArmTimer);
-//!         irq_mgr.activate(Interrupt::Aux);
-//!     });
-//!
-//!     enable_interrupts();
 //! }
 //! ```
 //!
@@ -46,18 +34,44 @@
 //! use ruspiro_interrupt::*;
 //!
 //! #[IrqHandler(Aux, Uart1)]
-//! fn aux_uart1_handler() {
+//! fn aux_uart1_handler(tx: Option<IsrSender<Box<dyn Any>>>) {
 //!     // implement Uart1 interrupt handler here
 //! }
+//! ```
 //!
-//! # fn main() {
-//! # }
+//! With the actual interrupt handling routines in place they the corresponding interrupts need to be configured and 
+//! activated like the following.
+//!
+//! ```no_run
+//! fn main() {
+//!     // as we have an interrupt handler defined we need to enable interrupt handling globally as well
+//!     // as the specific interrupt we have a handler implemented for
+//!     irq::initialize();
+//!     // activate an irq that use a channel to allow notification to flow from the interrupt handler to the "normal" 
+//!     // processing
+//!     let (timer_tx, mut timer_rx) = isr_channel::<()>();
+//!     irq::activate(Interrupt::ArmTimer, timer_tx);
+//!     // activate an irq that does not use a channel as all processing is done inside it's handler
+//!     irq::activate(Interrupt::Aux, None);
+//!     });
+//!
+//!     enable_interrupts();
+//!
+//!     // wait for the interrupt to send some data along (blocking current execution)
+//!     let _ = timer_rx.recv();
+//!
+//!     // when the crate is used with the feature `async` beeing set, waiting for
+//!     // for the data send by the interrupt would look like this:
+//!     while let Some(_) = timer_rx.next().await {
+//!       // do stuff ...
+//!     }
+//! }
 //! ```
 //!
 //! # Limitations
 //!
-//! However, only a limited ammount of shared interrupts is available with the current version - which is only the **Aux**
-//! interrupt at the moment.
+//! However, only a limited ammount of shared interrupt lines implementation is available with the current version -
+//! which is only the **Aux** interrupt at the moment.
 //!
 
 #![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/||VERSION||")]
@@ -83,8 +97,12 @@ pub use ruspiro_interrupt_macros::*;
 
 #[cfg(feature = "async")]
 pub use ruspiro_channel::mpmc::AsyncSender as IsrSender;
+#[cfg(feature = "async")]
+pub use ruspiro_channel::mpmc::async_channel as isr_channel;
 #[cfg(not(feature = "async"))]
 pub use ruspiro_channel::mpmc::Sender as IsrSender;
+#[cfg(not(feature = "async"))]
+pub use ruspiro_channel::mpmc::channel as isr_channel;
 
 /// One time interrupt manager initialization. This performs the initial configuration and deactivates all IRQs
 pub fn initialize() {
@@ -96,7 +114,7 @@ pub fn initialize() {
 /// loop as the interrupt never gets acknowledged by the handler.
 /// The is unfortunately no generic way of acknowledgement implementation possible as the acknowledge
 /// register and process differs for the individual interrupts.
-pub fn activate(irq: Interrupt, tx: IsrSender<Box<dyn Any>>) {
+pub fn activate(irq: Interrupt, tx: Option<IsrSender<Box<dyn Any>>>) {
   // Aux interrupts share one interrupt line - thus special handling for setting the IsrSender
   // Aux interrupt activation is done in a separate function
   if irq == Interrupt::Aux {
@@ -110,7 +128,7 @@ pub fn activate(irq: Interrupt, tx: IsrSender<Box<dyn Any>>) {
   ISR_LIST.0.get(irq_bank as usize).map(|bank| {
     bank
       .get(irq_num as usize)
-      .map(|(_, irq_tx)| irq_tx.borrow_mut().replace(tx));
+      .map(|(_, irq_tx)| *irq_tx.borrow_mut() = tx);
   });
 
   interface::activate(irq);
@@ -171,8 +189,8 @@ extern "C" fn __isr_default() {
   for (&pending_bank, handler_bank) in pendings.iter().zip(ISR_LIST.0.iter()) {
     for irq in bitset::BitSet32(pending_bank).iter() {
       handler_bank.get(irq as usize).map(|(handler, tx)| {
-        let tx = tx.borrow().as_ref().unwrap().clone();
-        handler(tx);
+        //let tx = tx.borrow().as_ref().unwrap().clone();
+        handler(tx.borrow().clone());
       });
     }
   }
@@ -184,7 +202,7 @@ macro_rules! default_handler_impl {
             #[allow(non_snake_case)]
             #[linkage="weak"]
             #[no_mangle]
-            extern "C" fn [<__irq_handler__ $name>](_tx: IsrSender<Box<dyn Any>>){
+            extern "C" fn [<__irq_handler__ $name>](_tx: Option<IsrSender<Box<dyn Any>>>){
                 //__irq_handler_Default();
             }
         }
@@ -238,11 +256,11 @@ default_handler_impl![
 
 #[allow(non_snake_case)]
 #[no_mangle]
-extern "C" fn __irq_handler_Default(_tx: IsrSender<Box<dyn Any>>) {}
+extern "C" fn __irq_handler_Default(_tx: Option<IsrSender<Box<dyn Any>>>) {}
 
 struct IsrList(
   [[(
-    extern "C" fn(IsrSender<Box<dyn Any>>),
+    extern "C" fn(Option<IsrSender<Box<dyn Any>>>),
     RefCell<Option<IsrSender<Box<dyn Any>>>>,
   ); 32]; 4],
 );

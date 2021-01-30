@@ -4,40 +4,12 @@
  * Author: André Borrmann
  * License: Apache License 2.0
  **********************************************************************************************************************/
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt-macros/0.2.1")]
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt-macros/0.3.0")]
 
 //! # Interrupt Macros
 //!
-//! This crate provides the custom attribute ``#[IrqHandler(<interrupt type>[, <source>])]`` to be used when implementing an
-//! interrupt handler.
-//!
-//! # Usage
-//!
-//! ```no_run
-//! use ruspiro_interrupt_macros::*;
-//! 
-//! #[IrqHandler(ArmTimer)]
-//! unsafe fn my_timer_handler() {
-//!     // implement the interrupt handling here and do not forget
-//!     // to acknowledge the interrupt in the interrupt specific registers
-//! }
-//! 
-//! # fn main() { }
-//! ```
-//!
-//! In some rare cases the interrupt line is shared between specific interrupt sources. In this case the source of
-//! the interrupt need to be passed as well as an identifier.
-//! ```no_run
-//! use ruspiro_interrupt_macros::*;
-//! 
-//! #[IrqHandler(Aux, Uart1)]
-//! unsafe fn my_aux_uart1_handler() {
-//!     // handle Uart1 interrupt here - this usually has no "acknowledge" register...
-//! }
-//! 
-//! # fn main() { }
-//! ```
-//!
+//! This crate provides the custom attribute ``#[IrqHandler(<interrupt type>[, <source>])]`` to be used when 
+//! implementing an interrupt handler. Detailed documentation can be found in the `ruspiro-interrupt` crate.
 //!
 
 extern crate proc_macro;
@@ -126,34 +98,16 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let stmts = block.stmts; // function statements
 
     let irq_name_s = format!("__irq_handler__{}", irq_func_suffix);
-    #[cfg(feature = "async")]
     return quote!(
         // use a fixed export name to ensure the same irq handler is not implemented twice
         #[allow(non_snake_case)]
         #[export_name = #irq_name_s]
         #(#attrs)*
         #[no_mangle]
-        pub unsafe extern "C" fn #ident(tx: ruspiro_channel::mpmc::AsyncSender<crate::alloc::boxed::Box<dyn Any>>) {
+        pub unsafe extern "C" fn #ident(tx: Option<ruspiro_interrupt::IsrSender<crate::alloc::boxed::Box<dyn Any>>>) {
             // force compiler error if the irq_name does not appear in the Interrupt enum that need to be
             // referred to in the crate using this attribute
-            self::Interrupt::#irq_name;
-
-            #(#stmts)*
-        }
-    )
-    .into();
-
-    #[cfg(not(feature = "async"))]
-    return quote!(
-        // use a fixed export name to ensure the same irq handler is not implemented twice
-        #[allow(non_snake_case)]
-        #[export_name = #irq_name_s]
-        #(#attrs)*
-        #[no_mangle]
-        pub unsafe extern "C" fn #ident(tx: ruspiro_channel::mpmc::Sender<crate::alloc::boxed::Box<dyn Any>>) {
-            // force compiler error if the irq_name does not appear in the Interrupt enum that need to be
-            // referred to in the crate using this attribute
-            self::Interrupt::#irq_name;
+            ruspiro_interrupt::Interrupt::#irq_name;
 
             #(#stmts)*
         }
