@@ -91,7 +91,6 @@ use alloc::boxed::Box;
 use auxhandler::{set_aux_isrsender, AuxDevice};
 use core::{any::Any, cell::RefCell};
 pub use irqtypes::*;
-use ruspiro_console::*;
 pub use ruspiro_interrupt_core::*;
 pub use ruspiro_interrupt_macros::*;
 
@@ -118,7 +117,7 @@ pub fn activate(irq: Interrupt, tx: Option<IsrSender<Box<dyn Any>>>) {
   // Aux interrupts share one interrupt line - thus special handling for setting the IsrSender
   // Aux interrupt activation is done in a separate function
   if irq == Interrupt::Aux {
-    warn!("AUX interrupts require activation with 'activate_aux'");
+    panic!("AUX interrupts require activation with 'activate_aux'");
     return;
   }
 

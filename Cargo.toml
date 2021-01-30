@@ -28,7 +28,6 @@ ruspiro-mmio-register = "0.1"
 ruspiro-interrupt-core = "0.3"
 ruspiro-interrupt-macros = { path = "./macros" } #"0.3"
 ruspiro-singleton = "0.4"
-#ruspiro-console = { git = "https://github.com/RusPiRo/ruspiro-console.git", branch = "development" }
 ruspiro-channel = { git = "https://github.com/RusPiRo/ruspiro-channel.git", branch = "development" }
 
 
