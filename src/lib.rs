@@ -91,7 +91,6 @@ use alloc::boxed::Box;
 use auxhandler::{set_aux_isrsender, AuxDevice};
 use core::{any::Any, cell::RefCell};
 pub use irqtypes::*;
-pub use ruspiro_interrupt_core::*;
 pub use ruspiro_interrupt_macros::*;
 
 #[cfg(feature = "async")]
@@ -108,6 +107,18 @@ pub fn initialize() {
   interface::initialize();
 }
 
+/// globally enabling interrupts (IRQ/FIQ) to be triggered
+pub fn enable_interrupts() {
+  interface::enable_irq();
+  interface::enable_fiq();
+}
+
+/// globally disabling interrupts (IRQ/FIQ) from beeing triggered
+pub fn disable_interrupts() {
+  interface::disable_irq();
+  interface::disable_fiq();
+}
+
 /// activate a specific interrupt to be raised and handled (id a handler is implemented)
 /// if there is no handler implemented for this interrupt it may lead to an endless interrupt
 /// loop as the interrupt never gets acknowledged by the handler.
@@ -118,7 +129,6 @@ pub fn activate(irq: Interrupt, tx: Option<IsrSender<Box<dyn Any>>>) {
   // Aux interrupt activation is done in a separate function
   if irq == Interrupt::Aux {
     panic!("AUX interrupts require activation with 'activate_aux'");
-    return;
   }
 
   let irq_bank = (irq as u32) >> 5;
@@ -245,10 +255,10 @@ default_handler_impl![
   CntPnsIrq,
   CntHpIrq,
   CntVIrq,
-  CoreMailbox0,
-  CoreMailbox1,
-  CoreMailbox2,
-  CoreMailbox3,
+  Core0Mailbox3,
+  Core1Mailbox3,
+  Core2Mailbox3,
+  Core3Mailbox3,
   CoreGPU,
   LocalTimer
 ];
@@ -374,10 +384,10 @@ static ISR_LIST: IsrList = IsrList([
     (__irq_handler__CntPnsIrq, RefCell::new(None)),
     (__irq_handler__CntHpIrq, RefCell::new(None)),
     (__irq_handler__CntVIrq, RefCell::new(None)),
-    (__irq_handler__CoreMailbox0, RefCell::new(None)), // 100
-    (__irq_handler__CoreMailbox1, RefCell::new(None)),
-    (__irq_handler__CoreMailbox2, RefCell::new(None)),
-    (__irq_handler__CoreMailbox3, RefCell::new(None)),
+    (__irq_handler__Core0Mailbox3, RefCell::new(None)), // 100
+    (__irq_handler__Core1Mailbox3, RefCell::new(None)),
+    (__irq_handler__Core2Mailbox3, RefCell::new(None)),
+    (__irq_handler__Core3Mailbox3, RefCell::new(None)),
     (__irq_handler__CoreGPU, RefCell::new(None)),
     (__irq_handler_Default, RefCell::new(None)),
     (__irq_handler_Default, RefCell::new(None)),

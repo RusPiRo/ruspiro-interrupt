@@ -41,6 +41,44 @@ pub(crate) fn initialize() {
   CORE_MB_INT_CONTROL3::Register.set(1 << 3);
 }
 
+/// globally enable ``IRQ`` interrupts to be triggered
+pub(crate) fn enable_irq() {
+  #[cfg(target_arch = "aarch64")]
+  unsafe {
+      llvm_asm!(
+          "msr daifclr, #2
+            isb"
+      ) // as per ARM spec the ISB ensures triggering pending interrupts
+  };
+}
+
+/// globally enable ``FIQ`` interrupts to be triggered
+pub(crate) fn enable_fiq() {
+  #[cfg(target_arch = "aarch64")]
+  unsafe {
+      llvm_asm!(
+          "msr daifclr, #1
+            isb"
+      ) // as per ARM spec the ISB ensures triggering pending interrupts
+  };
+}
+
+/// globally disable ``IRQ`` interrupts from beeing triggered.
+pub fn disable_irq() {
+  #[cfg(target_arch = "aarch64")]
+  unsafe {
+      llvm_asm!("msr daifset, #2")
+  };
+}
+
+/// globally disable ``FIQ`` interrupts from beeing triggered.
+pub fn disable_fiq() {
+  #[cfg(target_arch = "aarch64")]
+  unsafe {
+      llvm_asm!("msr daifset, #1")
+  };
+}
+
 pub(crate) fn activate(irq: Interrupt) {
   let bank = (irq as u32) >> 5;
   let enable_bit = 1 << ((irq as u32) & 0x1F);
@@ -64,16 +102,16 @@ pub(crate) fn activate(irq: Interrupt) {
         Interrupt::CntVIrq => {
           CORE0_TIMER_IRQ::Register.modify_value(CORE0_TIMER_IRQ::CNTVIRQ::ENABLED);
         }
-        Interrupt::CoreMailbox0 => {
-          CORE0_MAILBOX_IRQ::Register.modify_value(CORE0_MAILBOX_IRQ::MB0_IRQ::ENABLED);
+        Interrupt::Core0Mailbox3 => {
+          CORE0_MAILBOX_IRQ::Register.modify_value(CORE0_MAILBOX_IRQ::MB3_IRQ::ENABLED);
         }
-        Interrupt::CoreMailbox1 => {
-          CORE1_MAILBOX_IRQ::Register.modify_value(CORE1_MAILBOX_IRQ::MB1_IRQ::ENABLED);
+        Interrupt::Core1Mailbox3 => {
+          CORE1_MAILBOX_IRQ::Register.modify_value(CORE1_MAILBOX_IRQ::MB3_IRQ::ENABLED);
         }
-        Interrupt::CoreMailbox2 => {
-          CORE2_MAILBOX_IRQ::Register.modify_value(CORE2_MAILBOX_IRQ::MB2_IRQ::ENABLED);
+        Interrupt::Core2Mailbox3 => {
+          CORE2_MAILBOX_IRQ::Register.modify_value(CORE2_MAILBOX_IRQ::MB3_IRQ::ENABLED);
         }
-        Interrupt::CoreMailbox3 => {
+        Interrupt::Core3Mailbox3 => {
           CORE3_MAILBOX_IRQ::Register.modify_value(CORE3_MAILBOX_IRQ::MB3_IRQ::ENABLED);
         }
         Interrupt::CoreGPU => (), // seems GPU interrupt cant be enabled/disabled as they are triggered from GPU
@@ -112,16 +150,16 @@ pub(crate) fn deactivate(irq: Interrupt) {
         Interrupt::CntVIrq => {
           CORE0_TIMER_IRQ::Register.modify_value(CORE0_TIMER_IRQ::CNTVIRQ::DISABLED);
         }
-        Interrupt::CoreMailbox0 => {
-          CORE0_MAILBOX_IRQ::Register.modify_value(CORE0_MAILBOX_IRQ::MB0_IRQ::DISABLED);
+        Interrupt::Core0Mailbox3 => {
+          CORE0_MAILBOX_IRQ::Register.modify_value(CORE0_MAILBOX_IRQ::MB3_IRQ::DISABLED);
         }
-        Interrupt::CoreMailbox1 => {
-          CORE1_MAILBOX_IRQ::Register.modify_value(CORE1_MAILBOX_IRQ::MB1_IRQ::DISABLED);
+        Interrupt::Core1Mailbox3 => {
+          CORE1_MAILBOX_IRQ::Register.modify_value(CORE1_MAILBOX_IRQ::MB3_IRQ::DISABLED);
         }
-        Interrupt::CoreMailbox2 => {
-          CORE2_MAILBOX_IRQ::Register.modify_value(CORE2_MAILBOX_IRQ::MB2_IRQ::DISABLED);
+        Interrupt::Core2Mailbox3 => {
+          CORE2_MAILBOX_IRQ::Register.modify_value(CORE2_MAILBOX_IRQ::MB3_IRQ::DISABLED);
         }
-        Interrupt::CoreMailbox3 => {
+        Interrupt::Core3Mailbox3 => {
           CORE3_MAILBOX_IRQ::Register.modify_value(CORE3_MAILBOX_IRQ::MB3_IRQ::DISABLED);
         }
         Interrupt::CoreGPU => (), // seems GPU interrupt cant be enabled/disabled as they are triggered from GPU
@@ -147,11 +185,18 @@ pub fn get_pending_irqs() -> [u32; 4] {
     // does not seem to appear in the other ones
     // as the most core specific interrupts can occur in one core only we merge them
     // into a single pending value, assuming we can ignore which core the interrupt was
-    // routed to
-    CORE_IRQ_PENDING0::Register.get()
-      | CORE_IRQ_PENDING1::Register.get()
-      | CORE_IRQ_PENDING2::Register.get()
-      | CORE_IRQ_PENDING3::Register.get(),
+    // routed to - with the exception of the mailbox interrupts. We allow only mailbox 3
+    // interrupts on each core, as they share the same bit we need to shift this ot the correct
+    // position
+    (CORE0_IRQ_PENDING::Register.get()
+      | CORE1_IRQ_PENDING::Register.get()
+      | CORE2_IRQ_PENDING::Register.get()
+      | CORE3_IRQ_PENDING::Register.get()
+    ) & !(0b1111 << 4) 
+      | (CORE0_IRQ_PENDING::Register.read_value(CORE0_IRQ_PENDING::MB3_IRQ).raw_value() >> 3)
+      | (CORE1_IRQ_PENDING::Register.read_value(CORE1_IRQ_PENDING::MB3_IRQ).raw_value() >> 2)
+      | (CORE2_IRQ_PENDING::Register.read_value(CORE2_IRQ_PENDING::MB3_IRQ).raw_value() >> 1)
+      | (CORE3_IRQ_PENDING::Register.read_value(CORE3_IRQ_PENDING::MB3_IRQ).raw_value() >> 0),
   ];
 
   pendings
@@ -165,10 +210,18 @@ define_mmio_register! [
     CORE_MB_INT_CONTROL2<ReadWrite<u32>@(ARM_CORE_BASE + 0x058)>,
     CORE_MB_INT_CONTROL3<ReadWrite<u32>@(ARM_CORE_BASE + 0x05C)>,
 
-    CORE_IRQ_PENDING0<ReadWrite<u32>@(ARM_CORE_BASE + 0x060)>,
-    CORE_IRQ_PENDING1<ReadWrite<u32>@(ARM_CORE_BASE + 0x064)>,
-    CORE_IRQ_PENDING2<ReadWrite<u32>@(ARM_CORE_BASE + 0x068)>,
-    CORE_IRQ_PENDING3<ReadWrite<u32>@(ARM_CORE_BASE + 0x06C)>,
+    CORE0_IRQ_PENDING<ReadWrite<u32>@(ARM_CORE_BASE + 0x060)> {
+      MB3_IRQ OFFSET(7)
+    },
+    CORE1_IRQ_PENDING<ReadWrite<u32>@(ARM_CORE_BASE + 0x064)> {
+      MB3_IRQ OFFSET(7)
+    },
+    CORE2_IRQ_PENDING<ReadWrite<u32>@(ARM_CORE_BASE + 0x068)> {
+      MB3_IRQ OFFSET(7)
+    },
+    CORE3_IRQ_PENDING<ReadWrite<u32>@(ARM_CORE_BASE + 0x06C)> {
+      MB3_IRQ OFFSET(7)
+    },
 
     IRQ_PENDING_B<ReadWrite<u32>@(ARM_IRQ_BASE + 0x200)>,
     IRQ_PENDING_1<ReadWrite<u32>@(ARM_IRQ_BASE + 0x204)>,
@@ -214,19 +267,19 @@ define_mmio_register! [
     /// into one pending bit set we will allow enabling only one mailbox for each
     /// core (core id = mailbox number)
     CORE0_MAILBOX_IRQ<ReadWrite<u32>@(ARM_CORE_BASE + 0x050)> {
-      MB0_IRQ OFFSET(0) [
+      MB3_IRQ OFFSET(3) [
         ENABLED = 1,
         DISABLED = 0
       ]
     },
     CORE1_MAILBOX_IRQ<ReadWrite<u32>@(ARM_CORE_BASE + 0x054)> {
-      MB1_IRQ OFFSET(1) [
+      MB3_IRQ OFFSET(3) [
         ENABLED = 1,
         DISABLED = 0
       ]
     },
     CORE2_MAILBOX_IRQ<ReadWrite<u32>@(ARM_CORE_BASE + 0x058)> {
-      MB2_IRQ OFFSET(2) [
+      MB3_IRQ OFFSET(3) [
         ENABLED = 1,
         DISABLED = 0
       ]

@@ -25,7 +25,6 @@ maintenance = { status = "actively-developed" }
 paste = "1.0"
 futures-util = { version = "0.3", default-features = false }
 ruspiro-mmio-register = "0.1"
-ruspiro-interrupt-core = "0.3"
 ruspiro-interrupt-macros = { path = "./macros" } #"0.3"
 ruspiro-singleton = "0.4"
 ruspiro-channel = "0.1"
@@ -38,7 +37,4 @@ async = ["ruspiro-interrupt-macros/async", "ruspiro-channel/async" ]
 [patch.crates-io]
 ruspiro-mmio-register = { git = "https://github.com/RusPiRo/ruspiro-mmio-register.git" }
 ruspiro-singleton = { git ="https://github.com/RusPiRo/ruspiro-singleton.git" }
-ruspiro-interrupt = { path = "." }
-ruspiro-interrupt-core = { path = "./core" }
-ruspiro-interrupt-macros = { path = "./macros" }
 ruspiro-channel = { git = "https://github.com/RusPiRo/ruspiro-channel.git", branch = "development" }
