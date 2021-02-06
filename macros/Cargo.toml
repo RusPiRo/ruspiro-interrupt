@@ -1,14 +1,14 @@
 [package]
 name = "ruspiro-interrupt-macros"
 authors = ["Andre Borrmann <pspwizard@gmx.de>"]
-version = "0.3.0" # remember to update html_root_url
+version = "0.2.2" # remember to update html_root_url
 description = """
 Macros used to implement interrupt handler.
 !!This crate is only useful in conjunction with the `ruspiro-interrupt` crate and shall never be used standalone!!
 """
 license = "Apache-2.0"
-repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v0.4.0"
-documentation = "https://docs.rs/ruspiro-interrupt/0.4.0"
+repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v||VERSION||"
+documentation = "https://docs.rs/ruspiro-interrupt/||VERSION||"
 readme = "README.md"
 keywords = ["RusPiRo", "baremetal", "raspberrypi", "interrupt"]
 categories = ["no-std", "embedded"]

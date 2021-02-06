@@ -45,10 +45,10 @@ pub(crate) fn initialize() {
 pub(crate) fn enable_irq() {
   #[cfg(target_arch = "aarch64")]
   unsafe {
-      llvm_asm!(
-          "msr daifclr, #2
+    llvm_asm!(
+      "msr daifclr, #2
             isb"
-      ) // as per ARM spec the ISB ensures triggering pending interrupts
+    ) // as per ARM spec the ISB ensures triggering pending interrupts
   };
 }
 
@@ -56,10 +56,10 @@ pub(crate) fn enable_irq() {
 pub(crate) fn enable_fiq() {
   #[cfg(target_arch = "aarch64")]
   unsafe {
-      llvm_asm!(
-          "msr daifclr, #1
+    llvm_asm!(
+      "msr daifclr, #1
             isb"
-      ) // as per ARM spec the ISB ensures triggering pending interrupts
+    ) // as per ARM spec the ISB ensures triggering pending interrupts
   };
 }
 
@@ -67,7 +67,7 @@ pub(crate) fn enable_fiq() {
 pub fn disable_irq() {
   #[cfg(target_arch = "aarch64")]
   unsafe {
-      llvm_asm!("msr daifset, #2")
+    llvm_asm!("msr daifset, #2")
   };
 }
 
@@ -75,7 +75,7 @@ pub fn disable_irq() {
 pub fn disable_fiq() {
   #[cfg(target_arch = "aarch64")]
   unsafe {
-      llvm_asm!("msr daifset, #1")
+    llvm_asm!("msr daifset, #1")
   };
 }
 
@@ -191,12 +191,24 @@ pub fn get_pending_irqs() -> [u32; 4] {
     (CORE0_IRQ_PENDING::Register.get()
       | CORE1_IRQ_PENDING::Register.get()
       | CORE2_IRQ_PENDING::Register.get()
-      | CORE3_IRQ_PENDING::Register.get()
-    ) & !(0b1111 << 4) 
-      | (CORE0_IRQ_PENDING::Register.read_value(CORE0_IRQ_PENDING::MB3_IRQ).raw_value() >> 3)
-      | (CORE1_IRQ_PENDING::Register.read_value(CORE1_IRQ_PENDING::MB3_IRQ).raw_value() >> 2)
-      | (CORE2_IRQ_PENDING::Register.read_value(CORE2_IRQ_PENDING::MB3_IRQ).raw_value() >> 1)
-      | (CORE3_IRQ_PENDING::Register.read_value(CORE3_IRQ_PENDING::MB3_IRQ).raw_value() >> 0),
+      | CORE3_IRQ_PENDING::Register.get())
+      & !(0b1111 << 4)
+      | (CORE0_IRQ_PENDING::Register
+        .read_value(CORE0_IRQ_PENDING::MB3_IRQ)
+        .raw_value()
+        >> 3)
+      | (CORE1_IRQ_PENDING::Register
+        .read_value(CORE1_IRQ_PENDING::MB3_IRQ)
+        .raw_value()
+        >> 2)
+      | (CORE2_IRQ_PENDING::Register
+        .read_value(CORE2_IRQ_PENDING::MB3_IRQ)
+        .raw_value()
+        >> 1)
+      | (CORE3_IRQ_PENDING::Register
+        .read_value(CORE3_IRQ_PENDING::MB3_IRQ)
+        .raw_value()
+        >> 0),
   ];
 
   pendings

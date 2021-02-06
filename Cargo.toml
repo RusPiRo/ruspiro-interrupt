@@ -5,7 +5,7 @@ version = "0.4.0" # remember to update html_root_url
 description = """
 Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts.
 """
-license = "Apache-2.0"
+license = "Apache-2.0 OR MIT"
 repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v||VERSION||"
 documentation = "https://docs.rs/ruspiro-interrupt/||VERSION||"
 readme = "README.md"
@@ -22,19 +22,20 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 # get functions like memset, memcpy into the binary
-paste = "1.0"
-futures-util = { version = "0.3", default-features = false }
-ruspiro-mmio-register = "0.1"
-ruspiro-interrupt-macros = { path = "./macros" } #"0.3"
-ruspiro-singleton = "0.4"
-ruspiro-channel = "0.1"
+paste = "~1.0"
+futures-util = { version = "~0.3", default-features = false, optional = true }
+ruspiro-mmio-register = "~0.1"
+ruspiro-interrupt-macros = "~0.2"
+ruspiro-singleton = "~0.4"
+ruspiro-channel = "~0.1"
 
 
 [features]
 ruspiro_pi3 = []
-async = ["ruspiro-interrupt-macros/async", "ruspiro-channel/async" ]
+async = ["futures-util", "ruspiro-interrupt-macros/async", "ruspiro-channel/async" ]
 
 [patch.crates-io]
+ruspiro-interrupt-macros = { path = "./macros" }
 ruspiro-mmio-register = { git = "https://github.com/RusPiRo/ruspiro-mmio-register.git" }
 ruspiro-singleton = { git ="https://github.com/RusPiRo/ruspiro-singleton.git" }
 ruspiro-channel = { git = "https://github.com/RusPiRo/ruspiro-channel.git", branch = "development" }

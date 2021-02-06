@@ -4,6 +4,10 @@
  * Author: André Borrmann
  * License: Apache License 2.0
  **********************************************************************************************************************/
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/||VERSION||")]
+#![no_std]
+#![feature(llvm_asm)]
+#![feature(linkage)]
 
 //! # Interrupt handler for Raspberry Pi
 //!
@@ -39,7 +43,7 @@
 //! }
 //! ```
 //!
-//! With the actual interrupt handling routines in place they the corresponding interrupts need to be configured and 
+//! With the actual interrupt handling routines in place they the corresponding interrupts need to be configured and
 //! activated like the following.
 //!
 //! ```no_run
@@ -47,7 +51,7 @@
 //!     // as we have an interrupt handler defined we need to enable interrupt handling globally as well
 //!     // as the specific interrupt we have a handler implemented for
 //!     irq::initialize();
-//!     // activate an irq that use a channel to allow notification to flow from the interrupt handler to the "normal" 
+//!     // activate an irq that use a channel to allow notification to flow from the interrupt handler to the "normal"
 //!     // processing
 //!     let (timer_tx, mut timer_rx) = isr_channel::<()>();
 //!     irq::activate(Interrupt::ArmTimer, timer_tx);
@@ -74,11 +78,6 @@
 //! which is only the **Aux** interrupt at the moment.
 //!
 
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/||VERSION||")]
-#![no_std]
-#![feature(llvm_asm)]
-#![feature(linkage)]
-
 extern crate alloc;
 extern crate paste;
 
@@ -94,13 +93,13 @@ pub use irqtypes::*;
 pub use ruspiro_interrupt_macros::*;
 
 #[cfg(feature = "async")]
-pub use ruspiro_channel::mpmc::AsyncSender as IsrSender;
-#[cfg(feature = "async")]
 pub use ruspiro_channel::mpmc::async_channel as isr_channel;
 #[cfg(not(feature = "async"))]
-pub use ruspiro_channel::mpmc::Sender as IsrSender;
-#[cfg(not(feature = "async"))]
 pub use ruspiro_channel::mpmc::channel as isr_channel;
+#[cfg(feature = "async")]
+pub use ruspiro_channel::mpmc::AsyncSender as IsrSender;
+#[cfg(not(feature = "async"))]
+pub use ruspiro_channel::mpmc::Sender as IsrSender;
 
 /// One time interrupt manager initialization. This performs the initial configuration and deactivates all IRQs
 pub fn initialize() {
@@ -208,7 +207,7 @@ extern "C" fn __isr_default() {
 macro_rules! default_handler_impl {
     ($($name:ident),*) => {$(
         paste::item!{
-            #[allow(non_snake_case)]
+            #[allow(non_snake_case, improper_ctypes_definitions)]
             #[linkage="weak"]
             #[no_mangle]
             extern "C" fn [<__irq_handler__ $name>](_tx: Option<IsrSender<Box<dyn Any>>>){
@@ -263,7 +262,7 @@ default_handler_impl![
   LocalTimer
 ];
 
-#[allow(non_snake_case)]
+#[allow(non_snake_case, improper_ctypes_definitions)]
 #[no_mangle]
 extern "C" fn __irq_handler_Default(_tx: Option<IsrSender<Box<dyn Any>>>) {}
 

@@ -36,50 +36,22 @@ pub(crate) fn set_aux_isrsender(aux: AuxDevice, tx: IsrSender<Box<dyn Any>>) {
   };
 }
 
+#[allow(improper_ctypes_definitions)]
 pub(crate) extern "C" fn aux_handler(_tx: Option<IsrSender<Box<dyn Any>>>) {
   // special Aux handling, as one IRQ line shares interrupts between Uart1, SPI1 and SPI2
   if AUX_IRQ::Register.read(AUX_IRQ::UART1) == 1 {
-    /*AUXISRSENDER
-      .uart1
-      .borrow()
-      .as_ref()
-      .map(|tx| crate::__irq_handler__Aux_Uart1(tx.clone()));*/
-      let tx = AUXISRSENDER
-        .uart1
-        .borrow()
-        .clone();
-
-        crate::__irq_handler__Aux_Uart1(tx);
+    let tx = AUXISRSENDER.uart1.borrow().clone();
+    crate::__irq_handler__Aux_Uart1(tx);
   }
 
   if AUX_IRQ::Register.read(AUX_IRQ::SPI1) == 1 {
-    /*AUXISRSENDER
-      .spi1
-      .borrow()
-      .as_ref()
-      .map(|tx| crate::__irq_handler__Aux_Spi1(tx.clone()));
-      */
-      let tx = AUXISRSENDER
-        .spi1
-        .borrow()
-        .clone();
-      
-      crate::__irq_handler__Aux_Spi1(tx);
+    let tx = AUXISRSENDER.spi1.borrow().clone();
+    crate::__irq_handler__Aux_Spi1(tx);
   }
 
   if AUX_IRQ::Register.read(AUX_IRQ::SPI2) == 1 {
-    /*AUXISRSENDER
-      .spi2
-      .borrow()
-      .as_ref()
-      .map(|tx| crate::__irq_handler__Aux_Spi2(tx.clone()));*/
-
-      let tx = AUXISRSENDER
-        .spi2
-        .borrow()
-        .clone();
-      
-      crate::__irq_handler__Aux_Spi2(tx);
+    let tx = AUXISRSENDER.spi2.borrow().clone();
+    crate::__irq_handler__Aux_Spi2(tx);
   }
 }
 

@@ -64,7 +64,11 @@ jobs:
           version: 'latest'
         
       - name: Publish-Dry-Run
-        run: cargo make publish_dry
+        run: |
+          cd ./macros
+          cargo make publish_dry
+          cd ..
+          cargo make publish_dry
 
   prepare_release:
     needs: [build, publish_dry]
@@ -164,10 +168,15 @@ jobs:
         run: |
           # before actually publishing replace the final version for doc and repository in the Crago.toml
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' Cargo.toml
+          sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./macros/Cargo.toml
           # also update the version in the lib.rs doc root url
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' src/lib.rs
           # and the README.md
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' README.md
         
       - name: Publish-Dry-Run
-        run: cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}
+        run: |
+          cd ./macros
+          cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}
+          cd ..
+          cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}

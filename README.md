@@ -10,9 +10,7 @@ the Raspberry Pi 3 in a bare metal environment.
 
 ## Dependencies
 
-This crate, when used to build a final binarry assumes that certain linker symbols does exist and are defined. These are
-usually provided when using the [``ruspiro-boot`` crate](https://crates.io/crates/ruspiro-boot) which comes with a linker
-script providing all the necessary linker symbols and entrypoints calling into this crate once it is used.
+This crate, when used to build a final binary, assumes that there is a low level exeption handler in place that will call into a function called `__isr_default`. When using the [``ruspiro-boot`` crate](https://crates.io/crates/ruspiro-boot) this function is *weakly* exported from their to allow floawless compiling and linking. However, this empty export will be overruled by the linker with the function of the same name exported from this crate.
 
 ## Usage
 
@@ -49,4 +47,4 @@ The currently only implemented shared source interrupt line is the ``AUX`` inter
 
 ## License
 
-Licensed under Apache License, Version 2.0, ([LICENSE](LICENSE) or http://www.apache.org/licenses/LICENSE-2.0)
+Licensed under Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0) or MIT ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)) at your choice.
