@@ -1,0 +1,26 @@
+#***********************************************************************************************************************
+# cargo make tasks to build the example for the Raspberry Pi
+#***********************************************************************************************************************
+[tasks.build]
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy"]
+
+[tasks.doc]
+command = "cargo"
+args = ["doc", "--open"]
+
+[tasks.clean]
+command = "cargo"
+args = ["clean"]
+
+[tasks.publish_dry]
+command = "cargo"
+args = ["publish", "--dry-run"]
+
+[tasks.publish]
+command = "cargo"
+args = ["publish", "--token", "${CRATES_TOKEN}", "--allow-dirty"]
