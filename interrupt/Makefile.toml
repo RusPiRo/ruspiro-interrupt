@@ -41,7 +41,7 @@ args = ["clean"]
 [tasks.publish_dry]
 env = { FEATURES = "ruspiro_pi3, async" }
 command = "cargo"
-args = ["publish", "--dry-run", "--features", "${FEATURES}"]
+args = ["publish", "--dry-run", "--features", "${FEATURES}", "--allow-dirty"]
 
 [tasks.publish]
 env = { FEATURES = "ruspiro_pi3, async" }

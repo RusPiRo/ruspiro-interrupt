@@ -34,11 +34,12 @@ jobs:
       - if: ${{ github.event_name != 'pull_request' }}
         name: Remove patches if not a PR build
         run: |
-          sed -i "/{^\[patch\.crates-io\] /{:a;N;/\Z}/!ba};/^ruspiro-.*\(git\|path\).*/d" Cargo.toml;
-          cat Cargo.toml
+          sed -i "/{^\[patch\.crates-io\] /{:a;N;/\Z}/!ba};/^ruspiro-.*\(git\|path\).*/d" ./interrupt/Cargo.toml;
 
       - name: Compile
-        run: cargo make pi3
+        run: |
+          cd ./interrupt
+          cargo make pi3
 
   publish_dry:
     name: Run Cargo Publish Dry-Run
@@ -67,7 +68,7 @@ jobs:
         run: |
           cd ./macros
           cargo make publish_dry
-          cd ..
+          cd ../interrupt
           cargo make publish_dry
 
   prepare_release:
@@ -97,14 +98,14 @@ jobs:
       - name: Prepre Crate Release Version
         run: |
           # extract current crate version from Cargo.toml
-          echo 'CRATE_VERSION=v'$(sed -En 's/^version.*=.*\"(.*)\".*$/\1/p' < Cargo.toml) >> $GITHUB_ENV
+          echo 'CRATE_VERSION=v'$(sed -En 's/^version.*=.*\"(.*)\".*$/\1/p' < ./interrupt/Cargo.toml) >> $GITHUB_ENV
           # retrieve last release version from github
           echo 'LAST_VERSION='$(curl --silent "https://api.github.com/repos/${{ env.GITHUB_REPOSITORY }}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') >> $GITHUB_ENV
       
       - name: Prepre Crate Release Version
         run: |
           # extract current crate version from Cargo.toml
-          echo 'CRATE_VERSION=v'$(sed -En 's/^version.*=.*\"(.*)\".*$/\1/p' < Cargo.toml) >> $GITHUB_ENV
+          echo 'CRATE_VERSION=v'$(sed -En 's/^version.*=.*\"(.*)\".*$/\1/p' < ./interrupt/Cargo.toml) >> $GITHUB_ENV
           # retrieve last release version from github
           echo 'LAST_VERSION='$(curl --silent "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') >> $GITHUB_ENV
 
@@ -162,15 +163,15 @@ jobs:
           version: 'latest'
 
       - name: Get current version
-        run: echo 'CRATE_VERSION='$(sed -En 's/^version.*=.*\"(.*)\".*$/\1/p' < Cargo.toml) >> $GITHUB_ENV
+        run: echo 'CRATE_VERSION='$(sed -En 's/^version.*=.*\"(.*)\".*$/\1/p' < ./interrupt/Cargo.toml) >> $GITHUB_ENV
       
       - name: Update version place holder in files
         run: |
           # before actually publishing replace the final version for doc and repository in the Crago.toml
-          sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' Cargo.toml
+          sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./interrupt/Cargo.toml
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./macros/Cargo.toml
           # also update the version in the lib.rs doc root url
-          sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' src/lib.rs
+          sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./interrupt/src/lib.rs
           # and the README.md
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' README.md
         
@@ -178,5 +179,5 @@ jobs:
         run: |
           cd ./macros
           cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}
-          cd ..
+          cd ../interrupt/
           cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}
