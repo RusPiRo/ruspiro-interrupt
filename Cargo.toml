@@ -1,0 +1,11 @@
+[workspace]
+members = [
+  "./macros",
+  "./interrupt"
+]
+
+[patch.crates-io]
+ruspiro-interrupt-macros = { path = "./macros" }
+ruspiro-mmio-register = { git = "https://github.com/RusPiRo/ruspiro-mmio-register.git" }
+ruspiro-singleton = { git ="https://github.com/RusPiRo/ruspiro-singleton.git" }
+ruspiro-channel = { git = "https://github.com/RusPiRo/ruspiro-channel.git", branch = "development" }
