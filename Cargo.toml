@@ -1,38 +1,11 @@
-[package]
-name = "ruspiro-interrupt"
-authors = ["Andre Borrmann <pspwizard@gmx.de>"]
-version = "0.3.1" # remember to update html_root_url
-description = """
-Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts.
-"""
-license = "Apache-2.0"
-repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v0.3.1"
-documentation = "https://docs.rs/ruspiro-interrupt/0.3.1"
-readme = "README.md"
-keywords = ["RusPiRo", "baremetal", "raspberrypi", "interrupt"]
-categories = ["no-std", "embedded"]
-edition = "2018"
-exclude = [".travis.yml", "Makefile.toml"]
-
-[badges]
-travis-ci = { repository = "RusPiRo/ruspiro-interrupt", branch = "master" }
-maintenance = { status = "actively-developed" }
-
-[lib]
-
-[dependencies]
-paste = "1.0.0"
-ruspiro-register = "0.4"
-ruspiro-interrupt-core = "0.3"
-ruspiro-interrupt-macros = "0.2"
-ruspiro-singleton = "0.3"
-
-[features]
-default = ["ruspiro_pi3"]
-ruspiro_pi3 = []
+[workspace]
+members = [
+  "./macros",
+  "./interrupt"
+]
 
 [patch.crates-io]
-ruspiro-register = { git = "https://github.com/RusPiRo/ruspiro-register.git" }
-ruspiro-singleton = { git ="https://github.com/RusPiRo/ruspiro-singleton.git" }
-ruspiro-interrupt-core = { path = "./core" }
 ruspiro-interrupt-macros = { path = "./macros" }
+ruspiro-mmio-register = { git = "https://github.com/RusPiRo/ruspiro-mmio-register.git" }
+ruspiro-singleton = { git ="https://github.com/RusPiRo/ruspiro-singleton.git" }
+ruspiro-channel = { git = "https://github.com/RusPiRo/ruspiro-channel.git", branch = "development" }
