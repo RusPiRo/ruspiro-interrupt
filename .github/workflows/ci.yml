@@ -66,13 +66,11 @@ jobs:
         
       - name: Publish-Dry-Run
         run: |
-          cd ./macros
-          cargo make publish_dry
           cd ../interrupt
           cargo make publish_dry
 
   prepare_release:
-    needs: [build]
+    needs: [build, publish_dry]
     if: ${{ github.ref == 'refs/heads/development' }}
     name: Prepare Release - Create Release PR
     runs-on: ubuntu-latest
@@ -87,7 +85,7 @@ jobs:
           PULL_REQUEST_BODY: "Automatic PR to the release branch as preperation to publish the library"
 
   deploy:
-    needs: [build]
+    needs: [build, publish_dry]
     if: ${{ github.ref == 'refs/heads/release' }}
     name: Create Release
     runs-on: ubuntu-latest
@@ -177,7 +175,5 @@ jobs:
         
       - name: Publish-Run
         run: |
-          cd ./macros
-          cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}
           cd ../interrupt/
           cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}

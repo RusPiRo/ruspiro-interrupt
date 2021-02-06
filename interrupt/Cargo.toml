@@ -1,14 +1,14 @@
 [package]
 name = "ruspiro-interrupt"
 authors = ["Andre Borrmann <pspwizard@gmx.de>"]
-version = "0.4.0" # remember to update html_root_url
+version = "0.4.1" # remember to update html_root_url
 description = """
 Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts.
 """
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v||VERSION||"
 documentation = "https://docs.rs/ruspiro-interrupt/||VERSION||"
-readme = "README.md"
+readme = "../README.md"
 keywords = ["RusPiRo", "baremetal", "raspberrypi", "interrupt"]
 categories = ["no-std", "embedded"]
 edition = "2018"
