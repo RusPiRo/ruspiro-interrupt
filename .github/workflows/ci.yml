@@ -68,7 +68,7 @@ jobs:
         run: |
           cd ./macros
           cargo make publish_dry
-          cd ./interrupt
+          cd ../interrupt
           cargo make publish_dry --profile pipeline
 
   prepare_release:
