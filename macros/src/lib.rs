@@ -4,7 +4,7 @@
  * Author: André Borrmann
  * License: Apache License 2.0
  **********************************************************************************************************************/
-#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt-macros/0.2.2")]
+#![doc(html_root_url = "https://docs.rs/ruspiro-interrupt-macros/||VERSION||")]
 
 //! # Interrupt Macros
 //!
@@ -105,7 +105,9 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[export_name = #irq_name_s]
         #(#attrs)*
         #[no_mangle]
-        pub unsafe extern "C" fn #ident(tx: Option<ruspiro_interrupt::IsrSender<crate::alloc::boxed::Box<dyn Any>>>) {
+        pub unsafe extern "C" fn #ident(
+          tx: Option<ruspiro_interrupt::IsrSender<crate::alloc::boxed::Box<dyn core::any::Any>>>
+        ) {
             // force compiler error if the irq_name does not appear in the Interrupt enum that need to be
             // referred to in the crate using this attribute
             ruspiro_interrupt::Interrupt::#irq_name;

@@ -1,7 +1,7 @@
 [package]
 name = "ruspiro-interrupt"
 authors = ["Andre Borrmann <pspwizard@gmx.de>"]
-version = "0.4.1" # remember to update html_root_url
+version = "0.4.2" # remember to update html_root_url
 description = """
 Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts.
 """
@@ -25,11 +25,11 @@ maintenance = { status = "actively-developed" }
 paste = "~1.0"
 futures-util = { version = "~0.3", default-features = false, optional = true }
 ruspiro-mmio-register = "~0.1"
-ruspiro-interrupt-macros = "~0.2"
+ruspiro-interrupt-macros = { path = "../macros", version = "~0.3" }
 ruspiro-singleton = "~0.4"
 ruspiro-channel = "~0.1"
-
 
 [features]
 ruspiro_pi3 = []
 async = ["futures-util", "ruspiro-interrupt-macros/async", "ruspiro-channel/async" ]
+

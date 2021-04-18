@@ -23,8 +23,8 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-          components: rustfmt, clippy, rust-src, llvm-tools-preview
-          target: aarch64-unknown-none
+          components: rust-src, llvm-tools-preview
+          target: aarch64-unknown-linux-gnu
 
       - name: Install Cargo Make
         uses: davidB/rust-cargo-make@v1
@@ -56,18 +56,23 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-          components: rustfmt, clippy, rust-src, llvm-tools-preview
-          target: aarch64-unknown-none
+          components: rust-src, llvm-tools-preview
+          target: aarch64-unknown-linux-gnu
 
       - name: Install Cargo Make
         uses: davidB/rust-cargo-make@v1
         with:
           version: 'latest'
         
-      - name: Publish-Dry-Run
+      - name: Publish-Dry-Run-Macros
         run: |
-          cd ./interrupt
+          cd ./macros
           cargo make publish_dry
+          # As interrupt depend on macros it's dry run would always fail
+          # as the dry run expects all dependencies to be available at crates.io
+          # already !
+          # cd ../interrupt
+          # cargo make publish_dry --profile pipeline
 
   prepare_release:
     needs: [build, publish_dry]
@@ -135,10 +140,10 @@ jobs:
           draft: false
           prerelease: false
 
-  publish:
+  publish-macros:
     if: ${{ github.ref == 'refs/heads/release' }}
     needs: deploy
-    name: Run Cargo Publish
+    name: Run Cargo Publish for Macros
     runs-on: ubuntu-latest
 
     steps:
@@ -152,8 +157,48 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-          components: rustfmt, clippy, rust-src, llvm-tools-preview
-          target: aarch64-unknown-none
+          components: rust-src, llvm-tools-preview
+          target: aarch64-unknown-linux-gnu
+
+      - name: Install Cargo Make
+        uses: davidB/rust-cargo-make@v1
+        with:
+          version: 'latest'
+
+      - name: Get current version
+        run: echo 'CRATE_VERSION='$(sed -En 's/^version.*=.*\"(.*)\".*$/\1/p' < ./macros/Cargo.toml) >> $GITHUB_ENV
+      
+      - name: Update version place holder in files
+        run: |
+          # before actually publishing replace the final version for doc and repository in the Crago.toml
+          sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./macros/Cargo.toml
+          # also update the version in the lib.rs doc root url
+          sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./macros/src/lib.rs
+          
+      - name: Publish-Run
+        run: |
+          cd ./macros/
+          cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }} --profile pipeline
+          
+  publish-interrups:
+    if: ${{ github.ref == 'refs/heads/release' }}
+    needs: [deploy, publish-macros]
+    name: Run Cargo Publish Interrupts
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the current code from github into the CI machine
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Install Rust Nightly and Cargo
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: rust-src, llvm-tools-preview
+          target: aarch64-unknown-linux-gnu
 
       - name: Install Cargo Make
         uses: davidB/rust-cargo-make@v1
@@ -167,7 +212,6 @@ jobs:
         run: |
           # before actually publishing replace the final version for doc and repository in the Crago.toml
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./interrupt/Cargo.toml
-          sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./macros/Cargo.toml
           # also update the version in the lib.rs doc root url
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./interrupt/src/lib.rs
           # and the README.md
@@ -175,5 +219,5 @@ jobs:
         
       - name: Publish-Run
         run: |
-          cd ./interrupt/
+          cd ../interrupt/
           cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}
