@@ -217,7 +217,13 @@ jobs:
           # and the README.md
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' README.md
         
+      # as macros are published now - do the dry run for interrupt followed by the real publish
+      - name: Publish-Dry-Run
+        run: |
+          cd ./interrupt/
+          cargo make publish_dry --profile pipeline
+
       - name: Publish-Run
         run: |
-          cd ../interrupt/
+          cd ./interrupt/
           cargo make publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}
