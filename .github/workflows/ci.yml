@@ -68,8 +68,11 @@ jobs:
         run: |
           cd ./macros
           cargo make publish_dry
-          cd ../interrupt
-          cargo make publish_dry --profile pipeline
+          # As interrupt depend on macros it's dry run would always fail
+          # as the dry run expects all dependencies to be available at crates.io
+          # already !
+          # cd ../interrupt
+          # cargo make publish_dry --profile pipeline
 
   prepare_release:
     needs: [build, publish_dry]
