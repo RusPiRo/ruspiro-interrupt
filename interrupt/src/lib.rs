@@ -26,7 +26,7 @@
 //!
 //!     // implement stuff that shall be executed if the interrupt is raised...
 //!     // be careful when this code uses spinlocks as this might lead to dead-locks if the
-//!     // executing code interrupted currently helds a lock the code inside this handler tries to aquire the same one
+//!     // executing code interrupted currently holds a lock the code inside this handler tries to aquire as well
 //! }
 //! ```
 //!
@@ -43,7 +43,7 @@
 //! }
 //! ```
 //!
-//! With the actual interrupt handling routines in place they the corresponding interrupts need to be configured and
+//! With the actual interrupt handling routines in place the corresponding interrupts need to be configured and
 //! activated like the following.
 //!
 //! ```no_run
@@ -51,13 +51,12 @@
 //!     // as we have an interrupt handler defined we need to enable interrupt handling globally as well
 //!     // as the specific interrupt we have a handler implemented for
 //!     irq::initialize();
-//!     // activate an irq that use a channel to allow notification to flow from the interrupt handler to the "normal"
+//!     // activate an irq that uses a channel to allow data to flow from the interrupt handler to the "normal"
 //!     // processing
 //!     let (timer_tx, mut timer_rx) = isr_channel::<()>();
 //!     irq::activate(Interrupt::ArmTimer, timer_tx);
 //!     // activate an irq that does not use a channel as all processing is done inside it's handler
 //!     irq::activate(Interrupt::Aux, None);
-//!     });
 //!
 //!     enable_interrupts();
 //!
@@ -72,7 +71,7 @@
 //! }
 //! ```
 //!
-//! # Limitations
+//! ## Limitations for shared interrupt lines
 //!
 //! However, only a limited ammount of shared interrupt lines implementation is available with the current version -
 //! which is only the **Aux** interrupt at the moment.
@@ -89,8 +88,8 @@ mod irqtypes;
 use alloc::boxed::Box;
 use auxhandler::{set_aux_isrsender, AuxDevice};
 use core::{any::Any, cell::RefCell};
-pub use irqtypes::*;
-pub use ruspiro_interrupt_macros::*;
+pub use irqtypes::Interrupt;
+pub use ruspiro_interrupt_macros::IrqHandler;
 
 #[cfg(feature = "async")]
 pub use ruspiro_channel::mpmc::async_channel as isr_channel;
@@ -118,11 +117,23 @@ pub fn disable_interrupts() {
   interface::disable_fiq();
 }
 
-/// activate a specific interrupt to be raised and handled (id a handler is implemented)
-/// if there is no handler implemented for this interrupt it may lead to an endless interrupt
+/// Activate a specific interrupt to be raised and handled (if a handler is implemented).
+/// If there is no handler implemented for this interrupt it may lead to an endless interrupt
 /// loop as the interrupt never gets acknowledged by the handler.
-/// The is unfortunately no generic way of acknowledgement implementation possible as the acknowledge
-/// register and process differs for the individual interrupts.
+/// There is unfortunately no generic way of acknowledgement implementation possible as the acknowledge
+/// register and process differs for the individual interrupts and thus need to be implemented in the specific
+/// handler.
+///
+/// You might want to pass a sender of an interrupt service routine channel. This channel can be used within the
+/// interrupt handler implementation to pass data from the ISR to the normal processing. An example for this could be
+/// an interrupt handler triggered by incomming data on the UART peripheral. The interrupt handler could read the 
+/// incomming data and push it into the channel for further processing that should take place outside of the interrupt
+/// handler because this one should run as fast as possible.
+/// To register an interrupt handler for a shared interrupt line the specialized respective function should be used.
+///
+/// # Panics
+/// The function panics if it is called for a known shared interrupt line
+///
 pub fn activate(irq: Interrupt, tx: Option<IsrSender<Box<dyn Any>>>) {
   // Aux interrupts share one interrupt line - thus special handling for setting the IsrSender
   // Aux interrupt activation is done in a separate function
@@ -140,24 +151,29 @@ pub fn activate(irq: Interrupt, tx: Option<IsrSender<Box<dyn Any>>>) {
   });
 
   interface::activate(irq);
-  //println!("enabled Irq's: {:X}, {:X}, {:X}", self.enabled[0], self.enabled[1], self.enabled[2]);
   #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
   unsafe {
     llvm_asm!("dmb sy")
   };
 }
 
-/// activate the AUX interrupt line. This line is shared between three aux devices. The miniUART, SPI1 and SPI2.
+/// Activate the AUX interrupt line. This line is shared between three aux devices. The miniUART, SPI1 and SPI2.
 /// The interrupts for those devices can't be enabled individually. However, we allow to register different IsrSender
 /// for the individual device as the interrupt provisioning is based on the AUXIRQ status register that indicates the
 /// correct device having raised the interrupt. The only way to suppress interrups for an individual device would
 /// require disabling of the device with the AUXENB register.
+///
+/// You might want to pass a sender of an interrupt service routine channel. This channel can be used within the
+/// interrupt handler implementation to pass data from the ISR to the normal processing. An example for this could be
+/// an interrupt handler triggered by incomming data on the UART peripheral. The interrupt handler could read the 
+/// incomming data and push it into the channel for further processing that should take place outside of the interrupt
+/// handler because this one should run as fast as possible.
+/// To register an interrupt handler for a shared interrupt line the specialized respective function should be used.
 pub fn activate_aux(aux: AuxDevice, tx: IsrSender<Box<dyn Any>>) {
   // Aux interrupts share one interrupt line - thus special handling for setting the IsrSender
   set_aux_isrsender(aux, tx);
 
   interface::activate(Interrupt::Aux);
-  //println!("enabled Irq's: {:X}, {:X}, {:X}", self.enabled[0], self.enabled[1], self.enabled[2]);
   #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
   unsafe {
     llvm_asm!("dmb sy")
@@ -197,7 +213,6 @@ extern "C" fn __isr_default() {
   for (&pending_bank, handler_bank) in pendings.iter().zip(ISR_LIST.0.iter()) {
     for irq in bitset::BitSet32(pending_bank).iter() {
       handler_bank.get(irq as usize).map(|(handler, tx)| {
-        //let tx = tx.borrow().as_ref().unwrap().clone();
         handler(tx.borrow().clone());
       });
     }

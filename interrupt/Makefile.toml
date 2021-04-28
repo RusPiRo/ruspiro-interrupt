@@ -30,9 +30,16 @@ env = { FEATURES = "ruspiro_pi3, async" }
 command = "cargo"
 args = ["doc", "--features", "${FEATURES}", "--open"]
 
-[tasks.pi3]
+[tasks.pi3_blocking]
+env = { FEATURES = "ruspiro_pi3" }
+run_task = "build"
+
+[tasks.pi3_async]
 env = { FEATURES = "ruspiro_pi3, async" }
 run_task = "build"
+
+[tasks.pi3]
+dependencies = ["pi3_blocking", "pi3_async"]
 
 [tasks.clean]
 command = "cargo"
