@@ -19,7 +19,7 @@ args = ["clean"]
 
 [tasks.publish_dry]
 command = "cargo"
-args = ["publish", "--dry-run"]
+args = ["publish", "--dry-run", "--allow-dirty"]
 
 [tasks.publish]
 command = "cargo"
