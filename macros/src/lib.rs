@@ -100,20 +100,20 @@ pub fn IrqHandler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
   let irq_name_s = format!("__irq_handler__{}", irq_func_suffix);
   return quote!(
-        // use a fixed export name to ensure the same irq handler is not implemented twice
-        #[allow(non_snake_case)]
-        #[export_name = #irq_name_s]
-        #(#attrs)*
-        #[no_mangle]
-        pub unsafe extern "C" fn #ident(
-          tx: Option<ruspiro_interrupt::IsrSender<crate::alloc::boxed::Box<dyn core::any::Any>>>
-        ) {
-            // force compiler error if the irq_name does not appear in the Interrupt enum that need to be
-            // referred to in the crate using this attribute
-            ruspiro_interrupt::Interrupt::#irq_name;
+      // use a fixed export name to ensure the same irq handler is not implemented twice
+      #[allow(non_snake_case)]
+      #[export_name = #irq_name_s]
+      #(#attrs)*
+      #[no_mangle]
+      pub unsafe extern "C" fn #ident(
+        tx: Option<ruspiro_interrupt::IsrSender<crate::alloc::boxed::Box<dyn core::any::Any>>>
+      ) {
+          // force compiler error if the irq_name does not appear in the Interrupt enum that need to be
+          // referred to in the crate using this attribute
+          ruspiro_interrupt::Interrupt::#irq_name;
 
-            #(#stmts)*
-        }
-    )
-    .into();
+          #(#stmts)*
+      }
+  )
+  .into();
 }

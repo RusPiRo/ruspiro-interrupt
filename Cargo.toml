@@ -4,8 +4,12 @@ members = [
   "./interrupt"
 ]
 
+exclude = [
+ "./interrupt/examples/minimal"
+]
+
 [patch.crates-io]
 ruspiro-interrupt-macros = { path = "./macros" }
-ruspiro-mmio-register = { git = "https://github.com/RusPiRo/ruspiro-mmio-register.git" }
-ruspiro-singleton = { git ="https://github.com/RusPiRo/ruspiro-singleton.git" }
+ruspiro-mmio-register = { git = "https://github.com/RusPiRo/ruspiro-mmio-register.git", branch = "development" }
+ruspiro-singleton = { git ="https://github.com/RusPiRo/ruspiro-singleton.git", branch = "development" }
 ruspiro-channel = { git = "https://github.com/RusPiRo/ruspiro-channel.git", branch = "development" }

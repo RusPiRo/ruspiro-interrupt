@@ -1,5 +1,11 @@
 # Changelog
 
+## :dog: v0.4.2
+
+- ### :wrench: Maintenance
+
+  Some minor cleanup has been done. The major addition is to provide a minimal example of how the crate is intended to be used to implement an interrupt handler based on the ARM system timer.
+
 ## :cat: v0.4.1
 
 - ### :bulb: Features
