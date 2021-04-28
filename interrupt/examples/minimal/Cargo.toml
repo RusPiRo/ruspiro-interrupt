@@ -18,6 +18,3 @@ ruspiro-boot = { version = "~0.5.3", features = ["multicore"] }
 ruspiro-interrupt = { path = "../../", features = ["ruspiro_pi3"] }
 ruspiro-mmio-register = "~0.1.2"
 ruspiro-mmu = "~0.1.1"
-
-[patch.crates-io]
-ruspiro-allocator = { path = "../../../../ruspiro-allocator" }
