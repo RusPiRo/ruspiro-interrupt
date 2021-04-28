@@ -45,6 +45,12 @@ unsafe fn my_handler_for_source(tx: Option<IsrSender<Box<dyn Any>>>) {
 The currently only implemented shared source interrupt line is the ``AUX`` interrupt. There the source could be one of:
 ``Uart1``, ``Spi1`` or ``Spi2``.
 
+## Features
+
+Feature   | Description
+----------|-------------
+**async** | Enables the `async` version of the interrupt handling implementation.
+
 ## License
 
 Licensed under Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0) or MIT ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)) at your choice.

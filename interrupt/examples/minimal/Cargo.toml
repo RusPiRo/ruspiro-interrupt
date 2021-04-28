@@ -1,0 +1,23 @@
+[package]
+name = "irq-example"
+version = "0.0.1"
+edition = "2018"
+
+[workspace]
+
+[[bin]]
+name = "kernel"
+path = "./src/main.rs"
+
+[build-dependencies]
+cc = "~1.0"
+
+[dependencies]
+ruspiro-allocator = "~0.4.5"
+ruspiro-boot = { version = "~0.5.3", features = ["multicore"] }
+ruspiro-interrupt = { path = "../../", features = ["ruspiro_pi3"] }
+ruspiro-mmio-register = "~0.1.2"
+ruspiro-mmu = "~0.1.1"
+
+[patch.crates-io]
+ruspiro-allocator = { path = "../../../../ruspiro-allocator" }
