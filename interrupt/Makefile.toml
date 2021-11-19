@@ -21,36 +21,61 @@ command = "cargo"
 args = ["build", "--release", "--features", "${FEATURES}"]
 
 [tasks.clippy]
-env = { FEATURES = "ruspiro_pi3, async" }
+env = { FEATURES = "pi3, async" }
 command = "cargo"
 args = ["clippy", "--features", "${FEATURES}"]
 
 [tasks.doc]
-env = { FEATURES = "ruspiro_pi3, async" }
+env = { FEATURES = "pi3, async" }
 command = "cargo"
 args = ["doc", "--features", "${FEATURES}", "--open"]
 
 [tasks.pi3_blocking]
-env = { FEATURES = "ruspiro_pi3" }
+env = { FEATURES = "pi3" }
 run_task = "build"
 
 [tasks.pi3_async]
-env = { FEATURES = "ruspiro_pi3, async" }
+env = { FEATURES = "pi3, async" }
 run_task = "build"
 
 [tasks.pi3]
 dependencies = ["pi3_blocking", "pi3_async"]
+
+[tasks.pi4_low_blocking]
+env = { FEATURES = "pi4_low" }
+run_task = "build"
+
+[tasks.pi4_low_async]
+env = { FEATURES = "pi4_low, async" }
+run_task = "build"
+
+[tasks.pi4_high_blocking]
+env = { FEATURES = "pi4_low" }
+run_task = "build"
+
+[tasks.pi4_high_async]
+env = { FEATURES = "pi4_low, async" }
+run_task = "build"
+
+[tasks.pi4_low]
+dependencies = ["pi4_low_blocking", "pi4_low_async"]
+
+[tasks.pi4_high]
+dependencies = ["pi4_high_blocking", "pi4_high_async"]
+
+[tasks.all]
+dependencies = ["pi3_blocking", "pi3_async", "pi4_high_blocking", "pi4_high_async"]
 
 [tasks.clean]
 command = "cargo"
 args = ["clean"]
 
 [tasks.publish_dry]
-env = { FEATURES = "ruspiro_pi3, async" }
+env = { FEATURES = "pi3, async" }
 command = "cargo"
 args = ["publish", "--dry-run", "--features", "${FEATURES}", "--allow-dirty"]
 
 [tasks.publish]
-env = { FEATURES = "ruspiro_pi3, async" }
+env = { FEATURES = "pi3, async" }
 command = "cargo"
 args = ["publish", "--token", "${CRATES_TOKEN}", "--allow-dirty", "--features", "${FEATURES}"]

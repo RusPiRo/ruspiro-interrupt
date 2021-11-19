@@ -10,17 +10,16 @@
 //! implementation based on the interrupt source.
 //!
 
-use alloc::boxed::Box;
-use core::{any::Any, cell::RefCell};
+use super::IsrChannel;
+use core::{cell::RefCell};
 use ruspiro_mmio_register::define_mmio_register;
 
-#[cfg(feature = "async")]
-use ruspiro_channel::mpmc::AsyncSender as IsrSender;
-#[cfg(not(feature = "async"))]
-use ruspiro_channel::mpmc::Sender as IsrSender;
-
-#[cfg(feature = "ruspiro_pi3")]
-const PERIPHERAL_BASE: usize = 0x3F00_0000;
+#[cfg(feature = "pi3")]
+const PERIPHERAL_BASE: usize = 0x0_3F00_0000;
+#[cfg(feature = "pi4_low")]
+const PERIPHERAL_BASE: usize = 0x0_FE00_0000;
+#[cfg(feature = "pi4_high")]
+const PERIPHERAL_BASE: usize = 0x4_7E00_0000;
 
 pub enum AuxDevice {
   Uart1,
@@ -28,37 +27,39 @@ pub enum AuxDevice {
   Spi2,
 }
 
-pub(crate) fn set_aux_isrsender(aux: AuxDevice, tx: IsrSender<Box<dyn Any>>) {
-  match aux {
-    AuxDevice::Uart1 => AUXISRSENDER.uart1.borrow_mut().replace(tx),
-    AuxDevice::Spi1 => AUXISRSENDER.spi1.borrow_mut().replace(tx),
-    AuxDevice::Spi2 => AUXISRSENDER.spi2.borrow_mut().replace(tx),
-  };
+pub(crate) fn set_aux_isrsender(aux: AuxDevice, channel: IsrChannel) {
+  if let Some(channel) = channel {
+    match aux {
+      AuxDevice::Uart1 => AUXISRSENDER.uart1.borrow_mut().replace(channel),
+      AuxDevice::Spi1 => AUXISRSENDER.spi1.borrow_mut().replace(channel),
+      AuxDevice::Spi2 => AUXISRSENDER.spi2.borrow_mut().replace(channel),
+    };
+  }
 }
 
 #[allow(improper_ctypes_definitions)]
-pub(crate) extern "C" fn aux_handler(_tx: Option<IsrSender<Box<dyn Any>>>) {
+pub(crate) extern "C" fn aux_handler(_: IsrChannel) {
   // special Aux handling, as one IRQ line shares interrupts between Uart1, SPI1 and SPI2
   if AUX_IRQ::Register.read(AUX_IRQ::UART1) == 1 {
-    let tx = AUXISRSENDER.uart1.borrow().clone();
-    crate::__irq_handler__Aux_Uart1(tx);
+    let channel = AUXISRSENDER.uart1.borrow().clone();
+    crate::__irq_handler__Aux_Uart1(channel);
   }
 
   if AUX_IRQ::Register.read(AUX_IRQ::SPI1) == 1 {
-    let tx = AUXISRSENDER.spi1.borrow().clone();
-    crate::__irq_handler__Aux_Spi1(tx);
+    let channel = AUXISRSENDER.spi1.borrow().clone();
+    crate::__irq_handler__Aux_Spi1(channel);
   }
 
   if AUX_IRQ::Register.read(AUX_IRQ::SPI2) == 1 {
-    let tx = AUXISRSENDER.spi2.borrow().clone();
-    crate::__irq_handler__Aux_Spi2(tx);
+    let channel = AUXISRSENDER.spi2.borrow().clone();
+    crate::__irq_handler__Aux_Spi2(channel);
   }
 }
 
 struct AuxIsrSender {
-  uart1: RefCell<Option<IsrSender<Box<dyn Any>>>>,
-  spi1: RefCell<Option<IsrSender<Box<dyn Any>>>>,
-  spi2: RefCell<Option<IsrSender<Box<dyn Any>>>>,
+  uart1: RefCell<IsrChannel>,
+  spi1: RefCell<IsrChannel>,
+  spi2: RefCell<IsrChannel>,
 }
 
 unsafe impl Sync for AuxIsrSender {}

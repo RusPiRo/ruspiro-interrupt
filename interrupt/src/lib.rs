@@ -6,7 +6,7 @@
  **********************************************************************************************************************/
 #![doc(html_root_url = "https://docs.rs/ruspiro-interrupt/||VERSION||")]
 #![no_std]
-#![feature(llvm_asm)]
+#![feature(asm)]
 #![feature(linkage)]
 
 //! # Interrupt handler for Raspberry Pi
@@ -76,6 +76,10 @@
 //! However, only a limited ammount of shared interrupt lines implementation is available with the current version -
 //! which is only the **Aux** interrupt at the moment.
 //!
+//!
+
+#[cfg(not(any(feature = "pi3", feature = "pi4_low", feature = "pi4_high")))]
+compile_error!("Either feature \"pi3\", \"pi4_low\" or \"pi4_high\" must be enabled for this crate");
 
 extern crate alloc;
 extern crate paste;
@@ -86,19 +90,26 @@ mod interface;
 mod irqtypes;
 
 use alloc::boxed::Box;
-use auxhandler::{set_aux_isrsender, AuxDevice};
+use auxhandler::set_aux_isrsender;
+pub use auxhandler::AuxDevice;
 use core::{any::Any, cell::RefCell};
 pub use irqtypes::Interrupt;
 pub use ruspiro_interrupt_macros::IrqHandler;
 
 #[cfg(feature = "async")]
 pub use ruspiro_channel::mpmc::async_channel as isr_channel;
-#[cfg(not(feature = "async"))]
+#[cfg(all(not(feature = "async"), feature = "channel"))]
 pub use ruspiro_channel::mpmc::channel as isr_channel;
+#[cfg(feature = "async")]
+pub use ruspiro_channel::mpmc::AsyncReceiver as IsrReceiver;
 #[cfg(feature = "async")]
 pub use ruspiro_channel::mpmc::AsyncSender as IsrSender;
 #[cfg(not(feature = "async"))]
+pub use ruspiro_channel::mpmc::Receiver as IsrReceiver;
+#[cfg(not(feature = "async"))]
 pub use ruspiro_channel::mpmc::Sender as IsrSender;
+
+type IsrChannel = Option<IsrSender<Box<dyn Any>>>;
 
 /// One time interrupt manager initialization. This performs the initial configuration and deactivates all IRQs
 pub fn initialize() {
@@ -126,7 +137,7 @@ pub fn disable_interrupts() {
 ///
 /// You might want to pass a sender of an interrupt service routine channel. This channel can be used within the
 /// interrupt handler implementation to pass data from the ISR to the normal processing. An example for this could be
-/// an interrupt handler triggered by incomming data on the UART peripheral. The interrupt handler could read the 
+/// an interrupt handler triggered by incomming data on the UART peripheral. The interrupt handler could read the
 /// incomming data and push it into the channel for further processing that should take place outside of the interrupt
 /// handler because this one should run as fast as possible.
 /// To register an interrupt handler for a shared interrupt line the specialized respective function should be used.
@@ -134,7 +145,7 @@ pub fn disable_interrupts() {
 /// # Panics
 /// The function panics if it is called for a known shared interrupt line
 ///
-pub fn activate(irq: Interrupt, tx: Option<IsrSender<Box<dyn Any>>>) {
+pub fn activate(irq: Interrupt, channel: IsrChannel) {
   // Aux interrupts share one interrupt line - thus special handling for setting the IsrSender
   // Aux interrupt activation is done in a separate function
   if irq == Interrupt::Aux {
@@ -147,13 +158,13 @@ pub fn activate(irq: Interrupt, tx: Option<IsrSender<Box<dyn Any>>>) {
   ISR_LIST.0.get(irq_bank as usize).map(|bank| {
     bank
       .get(irq_num as usize)
-      .map(|(_, irq_tx)| *irq_tx.borrow_mut() = tx);
+      .map(|(_, irq_channel)| *irq_channel.borrow_mut() = channel);
   });
 
   interface::activate(irq);
   #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
   unsafe {
-    llvm_asm!("dmb sy")
+    asm!("dmb sy")
   };
 }
 
@@ -165,18 +176,18 @@ pub fn activate(irq: Interrupt, tx: Option<IsrSender<Box<dyn Any>>>) {
 ///
 /// You might want to pass a sender of an interrupt service routine channel. This channel can be used within the
 /// interrupt handler implementation to pass data from the ISR to the normal processing. An example for this could be
-/// an interrupt handler triggered by incomming data on the UART peripheral. The interrupt handler could read the 
+/// an interrupt handler triggered by incomming data on the UART peripheral. The interrupt handler could read the
 /// incomming data and push it into the channel for further processing that should take place outside of the interrupt
 /// handler because this one should run as fast as possible.
 /// To register an interrupt handler for a shared interrupt line the specialized respective function should be used.
-pub fn activate_aux(aux: AuxDevice, tx: IsrSender<Box<dyn Any>>) {
+pub fn activate_aux(aux: AuxDevice, channel: IsrChannel) {
   // Aux interrupts share one interrupt line - thus special handling for setting the IsrSender
-  set_aux_isrsender(aux, tx);
+  set_aux_isrsender(aux, channel);
 
   interface::activate(Interrupt::Aux);
   #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
   unsafe {
-    llvm_asm!("dmb sy")
+    asm!("dmb sy")
   };
 }
 
@@ -191,12 +202,12 @@ pub fn deactivate(irq: Interrupt) {
   ISR_LIST.0.get(irq_bank as usize).map(|bank| {
     bank
       .get(irq_num as usize)
-      .map(|(_, irq_tx)| irq_tx.borrow_mut().take());
+      .map(|(_, irq_channel)| irq_channel.borrow_mut().take());
   });
 
   #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
   unsafe {
-    llvm_asm!("dmb sy")
+    asm!("dmb sy")
   };
 }
 
@@ -205,15 +216,14 @@ pub fn deactivate(irq: Interrupt) {
  * module, so define them here
  ********************************************************************************************/
 #[no_mangle]
-extern "C" fn __isr_default() {
+unsafe extern "C" fn __isr_default() {
   // now retrieve the pending interrupts (already filtered by the active one)
   let pendings = interface::get_pending_irqs();
-
   // now dispatch the interrupts to their respective handler
   for (&pending_bank, handler_bank) in pendings.iter().zip(ISR_LIST.0.iter()) {
     for irq in bitset::BitSet32(pending_bank).iter() {
-      handler_bank.get(irq as usize).map(|(handler, tx)| {
-        handler(tx.borrow().clone());
+      handler_bank.get(irq as usize).map(|(handler, channel)| {
+        handler(channel.borrow().clone());
       });
     }
   }
@@ -225,9 +235,7 @@ macro_rules! default_handler_impl {
             #[allow(non_snake_case, improper_ctypes_definitions)]
             #[linkage="weak"]
             #[no_mangle]
-            extern "C" fn [<__irq_handler__ $name>](_tx: Option<IsrSender<Box<dyn Any>>>){
-                //__irq_handler_Default();
-            }
+            extern "C" fn [<__irq_handler__ $name>](_tx: IsrChannel){}
         }
     )*};
 }
@@ -279,14 +287,9 @@ default_handler_impl![
 
 #[allow(non_snake_case, improper_ctypes_definitions)]
 #[no_mangle]
-extern "C" fn __irq_handler_Default(_tx: Option<IsrSender<Box<dyn Any>>>) {}
+extern "C" fn __irq_handler_Default(_channel: IsrChannel) {}
 
-struct IsrList(
-  [[(
-    extern "C" fn(Option<IsrSender<Box<dyn Any>>>),
-    RefCell<Option<IsrSender<Box<dyn Any>>>>,
-  ); 32]; 4],
-);
+struct IsrList([[(extern "C" fn(IsrChannel), RefCell<IsrChannel>); 32]; 4]);
 unsafe impl Sync for IsrList {}
 
 /// The list of interrupt service routines

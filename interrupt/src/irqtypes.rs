@@ -18,39 +18,53 @@
 #[repr(u8)]
 #[derive(Copy, Clone, PartialEq)]
 pub enum Interrupt {
-  // IRQ's appearing in the GPU pending register 1 and 2
-  // IRQ 0 - 31 / Bank 1 (only the IRQ's that could be registered)
+  // IRQ's appearing in the GPU pending registers
+  // IRQ 0 - 31 (only the IRQ's that could be registered)
   SystemTimer1 = 1,
   SystemTimer3 = 3,
   Isp = 8,
-  // USB
   Usb = 9, // Synopsys DesignWare Hi-Speed USB 2.0 OTG controller IRQ. Also available as IRQ 75 in basic pending
   CoreSync0 = 12,
   CoreSync1 = 13,
   CoreSync2 = 14,
   CoreSync3 = 15,
+  /*
+  DMA0 = 16,
+  DMA1 = 17,
+  DMA2 = 18,
+  DMA3 = 19,
+  DMA4 = 20,
+  DMA5 = 21,
+  DMA6 = 22,
+  DMA7_8 = 23,
+  DMA9_10 = 24,
+  DMA11 = 25,
+  DMA12 = 26,
+  DMA13 = 27,
+  DMA14 = 28,
+  */
   Aux = 29,
   // ARM
   Arm = 30,
   // GPU-DMA
   GpuDma = 31,
 
-  // IRQ 32 - 63 / Bank 2
-  /*HostPort        = 32,
-  VideoScaler     = 33,
-  Ccp2Tx          = 34,
+  // IRQ 32 - 63
+  /*HostPort        = 32, // HDMI CEC
+  VideoScaler     = 33, // HVS
+  Ccp2Tx          = 34, // RPIVID
   Sdc             = 35,
   Dsi0            = 36,
-  Ave             = 37,
+  Ave             = 37, // Pixel Valve2
   Cam0            = 38,
   Cam1            = 39,
   Hdmi0           = 40,
   Hdmi1           = 41,
-  PixelValve1     = 42,
+  PixelValve3     = 42,
   I2cSpi          = 43,
   Dsi1            = 44,
-  Pwa0            = 45,
-  Pwa1            = 46,
+  Pwa0            = 45, // PixelValve0
+  Pwa1            = 46, // PixelValve 1 & 4
   Cpr             = 47,
   Smi             = 48,
   */
@@ -63,6 +77,8 @@ pub enum Interrupt {
   I2sPcm = 55, // also available as IRQ 81 in basic pending
   Sdio = 56,   // also available as IRQ 82 in basic pending
   Pl011 = 57,  // also avialable as IRQ 83 in basic pending
+  // Eth_PCIe  = 58,
+
   // IRQ 64 - 95 - Bank Basic
   ArmTimer = 64,
   ArmMailbox = 65,
