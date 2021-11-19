@@ -102,7 +102,7 @@ dependencies = [
 
 [[package]]
 name = "ruspiro-interrupt-macros"
-version = "0.3.2"
+version = "0.5.0"
 dependencies = [
  "quote",
  "syn",
