@@ -16,7 +16,7 @@ RUSTFLAGS = "-C linker=${CC} -C target-cpu=cortex-a53 -C link-arg=-nostartfiles 
 
 [tasks.build]
 command = "cargo"
-args = ["build", "--release", "--features", "${FEATURES}"]
+args = ["build", "--release"]
 
 [tasks.kernel]
 command = "aarch64-none-elf-objcopy"
