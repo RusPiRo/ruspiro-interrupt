@@ -17,11 +17,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      - name: Install aarch64 gcc toolchain
+        run: sudo apt-get install -y gcc-aarch64-linux-gnu
+
       - name: Install Rust Nightly and Cargo
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2021-04-24
+          toolchain: nightly-2021-09-05
           override: true
           components: rust-src, llvm-tools-preview
           target: aarch64-unknown-linux-gnu
@@ -36,10 +39,25 @@ jobs:
       #   run: |
       #     sed -i "/{^\[patch\.crates-io\] /{:a;N;/\Z}/!ba};/^ruspiro-.*\(git\|path\).*/d" ./interrupt/Cargo.toml;
 
-      - name: Compile
+      - name: Compile Pi3
         run: |
           cd ./interrupt
           cargo make pi3
+
+      - name: Compile Pi4 LowPeri
+        run: |
+          cd ./interrupt
+          cargo make pi4_low
+
+      - name: Compile Pi4 HighPeri
+        run: |
+          cd ./interrupt
+          cargo make pi4_high
+
+      - name: Compile Example
+        run: |
+          cd ./interrupt/examples/minimal
+          cargo make --profile pipeline build
 
   publish_dry:
     name: Run Cargo Publish Dry-Run
@@ -54,7 +72,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2021-04-24
+          toolchain: nightly-2021-09-05
           override: true
           components: rust-src, llvm-tools-preview
           target: aarch64-unknown-linux-gnu
@@ -155,7 +173,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2021-04-24
+          toolchain: nightly-2021-09-05
           override: true
           components: rust-src, llvm-tools-preview
           target: aarch64-unknown-linux-gnu
@@ -195,7 +213,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2021-04-24
+          toolchain: nightly-2021-09-05
           override: true
           components: rust-src, llvm-tools-preview
           target: aarch64-unknown-linux-gnu

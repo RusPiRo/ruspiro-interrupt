@@ -11,18 +11,25 @@
 use std::{env, fs, path::Path};
 
 fn main() {
-    // copy the linker script from the boot crate to the current directory
-    // so it will be invoked by the linker
-    if let Some(source) = env::var_os("DEP_RUSPIRO_BOOT_LINKERSCRIPT") {
-        println!("found boot dependency");
-        let ld_source = source.to_str().unwrap().replace("\\", "/");
-        let src_file = Path::new(&ld_source);
-        let trg_file = format!(
-            "{}/{}",
-            env::current_dir().unwrap().display(),
-            src_file.file_name().unwrap().to_str().unwrap()
-        );
-        println!("Copy linker script from {:?}, to {:?}", src_file, trg_file);
-        fs::copy(src_file, trg_file).unwrap();
-    }
+  for (k, v) in std::env::vars() {
+    println!("{} -> {}", k, v);
+  }
+  // copy the linker script from the boot crate to the current directory
+  // so it will be invoked by the linker
+  if let Some(source) = env::var_os("DEP_RUSPIRO_BOOT_LINKERSCRIPT") {
+    println!("found boot dependency");
+    let ld_source = source.to_str().unwrap().replace("\\", "/");
+    let src_file = Path::new(&ld_source);
+    let trg_file = format!(
+      "{}/{}",
+      //env::current_dir().unwrap().display(),
+      env::var_os("CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY")
+        .unwrap()
+        .to_str()
+        .unwrap(),
+      src_file.file_name().unwrap().to_str().unwrap()
+    );
+    println!("Copy linker script from {:?}, to {:?}", src_file, trg_file);
+    fs::copy(src_file, trg_file).unwrap();
+  }
 }
