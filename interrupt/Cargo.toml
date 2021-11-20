@@ -1,9 +1,9 @@
 [package]
 name = "ruspiro-interrupt"
 authors = ["Andre Borrmann <pspwizard@gmx.de>"]
-version = "0.4.3" # remember to update html_root_url
+version = "0.5.0" # remember to update html_root_url
 description = """
-Providing a simple and convinient way to implement interrupt handler for Raspberry Pi interrupts.
+Providing a simple and convenient way to implement interrupt handler for Raspberry Pi interrupts.
 """
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/RusPiRo/ruspiro-interrupt/tree/v||VERSION||"
@@ -11,7 +11,7 @@ documentation = "https://docs.rs/ruspiro-interrupt/||VERSION||"
 readme = "../README.md"
 keywords = ["RusPiRo", "baremetal", "raspberrypi", "interrupt"]
 categories = ["no-std", "embedded"]
-edition = "2018"
+edition = "2021"
 exclude = ["Makefile.toml"]
 links = "ruspiro_interrupt"
 
@@ -22,13 +22,15 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 paste = "~1.0"
-futures-util = { version = "~0.3.14", default-features = false, optional = true }
-ruspiro-mmio-register = "~0.1.2"
-ruspiro-interrupt-macros = { path = "../macros", version = "~0.3" }
-ruspiro-singleton = "~0.4.2"
+futures-util = { version = "~0.3.17", default-features = false, optional = true }
+ruspiro-arch-aarch64 = "~0.1.5"
+ruspiro-mmio-register = "~0.1.3"
+ruspiro-interrupt-macros = { path = "../macros", version = "~0.5.0" }
+ruspiro-singleton = "~0.4.3"
 ruspiro-channel = "~0.1.1"
 
 [features]
-ruspiro_pi3 = []
+pi3 = []
+pi4_low = []
+pi4_high = []
 async = ["futures-util", "ruspiro-interrupt-macros/async", "ruspiro-channel/async" ]
-

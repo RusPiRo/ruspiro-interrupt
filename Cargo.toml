@@ -1,11 +1,8 @@
 [workspace]
 members = [
   "./macros",
-  "./interrupt"
-]
-
-exclude = [
- "./interrupt/examples/minimal"
+  "./interrupt",
+  "./interrupt/examples/minimal"
 ]
 
 [patch.crates-io]

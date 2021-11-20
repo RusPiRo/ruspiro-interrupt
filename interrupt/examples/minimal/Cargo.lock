@@ -68,15 +68,17 @@ checksum = "fc874b127765f014d792f16763a81245ab80500e2ad921ed4ee9e82481ee08fe"
 [[package]]
 name = "ruspiro-allocator"
 version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac6050b043a7e6299fbefa9efd6695cc90018bb8a2101bf35462c499b84095d0"
 dependencies = [
  "rlibc",
 ]
 
 [[package]]
 name = "ruspiro-arch-aarch64"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "487585439e7a06c60294325fd1016cf5841ecf39bc388088d7fe09938a5e8050"
+checksum = "7070655f218fb750e3757a68b123fad8851a279134eae88c9ac7d4a5f6b96c21"
 dependencies = [
  "ruspiro-register",
 ]
@@ -114,9 +116,10 @@ dependencies = [
 
 [[package]]
 name = "ruspiro-interrupt"
-version = "0.4.3"
+version = "0.5.0"
 dependencies = [
  "paste",
+ "ruspiro-arch-aarch64",
  "ruspiro-channel",
  "ruspiro-interrupt-macros",
  "ruspiro-mmio-register",
@@ -125,7 +128,7 @@ dependencies = [
 
 [[package]]
 name = "ruspiro-interrupt-macros"
-version = "0.3.1"
+version = "0.5.0"
 dependencies = [
  "quote",
  "syn",
@@ -139,9 +142,9 @@ checksum = "173b1c02f49d11313eede4e63d03c2125f5f13f2119f98a213edbb03b20740bd"
 
 [[package]]
 name = "ruspiro-mmio-register"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89465de88f06814e1a2a5568bf74e27aa8e57524161a67a2edfff73becbfc54b"
+checksum = "ebfbf049577a3159ff4666ac6e312b137696b88a72caa056a3a8322a0de96ba2"
 dependencies = [
  "ruspiro-register",
 ]
@@ -163,9 +166,9 @@ checksum = "161d5f7992ad812a4cf78301846265fb34ba86db288d17aa35d36c5ec72ee349"
 
 [[package]]
 name = "ruspiro-singleton"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e1200cd47b70e308765b86464e92ae42f95020a06219aa7415c3fcb211e5e91"
+checksum = "7b2c5eacce361d2fbe601ada9717c93ffbd8bd9670afe3eea9496bb993db19ed"
 dependencies = [
  "ruspiro-lock",
 ]
