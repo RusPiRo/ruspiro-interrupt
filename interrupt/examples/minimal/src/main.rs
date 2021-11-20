@@ -74,14 +74,14 @@ fn running(_core: u32) -> ! {
 
 // provide the interrupt handler implementation for a specific interrupt
 #[IrqHandler(SystemTimer1)]
-fn isr_system_timer(tx: Option<IsrSender<Box<dyn Any>>>) {
+fn isr_system_timer(channel: Option<IsrSender<Box<dyn Any>>>) {
   // as soon as the interupt was raised we need to acknowledge the same
   // as we could configure up to 4 compare match values we need to check
   // which one actually raised this IRQ. We only deal with match value 1 here
   if SYS_TIMERCS::Register.read(SYS_TIMERCS::M1) == 1 {
     SYS_TIMERCS::Register.write_value(SYS_TIMERCS::M1::MATCH);
     // in case of a channel being present just send an empty message
-    tx.map(|channel| channel.send(Box::new(())));
+    channel.map(|tx| tx.send(Box::new(())));
     // once we have received the timer interrupt update the match value
     // to trigger the interrupt again
     // set the match value to the current free-running counter + some delta

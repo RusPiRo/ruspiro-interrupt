@@ -1,7 +1,6 @@
 # Interrupt RusPiRo crate
 
-This crates provides functions and macros (custom attributes) to conviniently define and implement interrupt handler for
-the Raspberry Pi 3 in a bare metal environment.
+This crates provides functions and macros (custom attributes) to conviniently define and implement interrupt handler for the Raspberry Pi 3 in a bare metal environment.
 
 ![CI](https://github.com/RusPiRo/ruspiro-interrupt/workflows/CI/badge.svg?branch=development)
 [![Latest Version](https://img.shields.io/crates/v/ruspiro-interrupt.svg)](https://crates.io/crates/ruspiro-interrupt)
@@ -28,7 +27,7 @@ extern crate ruspiro_interrupt; // needed for proper linking of weak defined fun
 use ruspiro_interrupt::*;
 
 #[IrqHandler(<irq-type-name>)]
-unsafe fn my_handler(tx: Option<IsrSender<Box<dyn Any>>>) {
+unsafe fn my_handler(channel: Option<IsrSender<Box<dyn Any>>>) {
   /* implementation omitted */
 }
 ```
@@ -37,7 +36,7 @@ In rare cases the interrupt line is shared for different sources, in this case t
 
 ```rust
 #[IrqHandler(<irq-type-name>, <source>)]
-unsafe fn my_handler_for_source(tx: Option<IsrSender<Box<dyn Any>>>) {
+unsafe fn my_handler_for_source(channel: Option<IsrSender<Box<dyn Any>>>) {
   /* implementation omitted */
 }
 ```
@@ -47,10 +46,13 @@ The currently only implemented shared source interrupt line is the ``AUX`` inter
 
 ## Features
 
-Feature   | Description
-----------|-------------
-**async** | Enables the `async` version of the interrupt handling implementation.
+Feature      | Description
+-------------|-------------
+**pi3**      | Uses the MMIO mapped peripheral Addresses of Raspberry Pi 3
+**pi4_low**  | Uses the MMIO mapped peripheral Addresses of Raspberry Pi 4 in *low-peri* mode. The `config.txt` requires `arm_peri_high=0` setting.
+**pi4_high** | Uses the MMIO mapped peripheral Addresses of Raspberry Pi 4 in *high-peri* mode. The `config.txt` requires `arm_peri_high=1` setting.
+**async**    | Enables the `async` version of the interrupt handling implementation.
 
 ## License
 
-Licensed under Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0) or MIT ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)) at your choice.
+Licensed under Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>) or MIT ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)) at your choice.

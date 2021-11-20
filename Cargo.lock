@@ -9,6 +9,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
+name = "cc"
+version = "1.0.72"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22a9137b95ea06864e018375b72adfb7db6e6f68cfc8df5a04d00288050485ee"
+
+[[package]]
+name = "cfg-if"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
 name = "futures-core"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -31,6 +43,27 @@ dependencies = [
  "futures-task",
  "pin-project-lite",
  "pin-utils",
+]
+
+[[package]]
+name = "irq-example"
+version = "0.0.1"
+dependencies = [
+ "cc",
+ "ruspiro-allocator",
+ "ruspiro-boot",
+ "ruspiro-interrupt",
+ "ruspiro-mmio-register",
+ "ruspiro-mmu",
+]
+
+[[package]]
+name = "log"
+version = "0.4.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
+dependencies = [
+ "cfg-if",
 ]
 
 [[package]]
@@ -70,12 +103,49 @@ dependencies = [
 ]
 
 [[package]]
+name = "rlibc"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc874b127765f014d792f16763a81245ab80500e2ad921ed4ee9e82481ee08fe"
+
+[[package]]
+name = "ruspiro-allocator"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac6050b043a7e6299fbefa9efd6695cc90018bb8a2101bf35462c499b84095d0"
+dependencies = [
+ "rlibc",
+]
+
+[[package]]
 name = "ruspiro-arch-aarch64"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7070655f218fb750e3757a68b123fad8851a279134eae88c9ac7d4a5f6b96c21"
 dependencies = [
  "ruspiro-register",
+]
+
+[[package]]
+name = "ruspiro-boot"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "240bd72c4a519d7487ad124267d842e57577efd97d2ae1c944e2b7b617c5f4d7"
+dependencies = [
+ "cc",
+ "log",
+ "ruspiro-cache",
+ "ruspiro-register",
+]
+
+[[package]]
+name = "ruspiro-cache"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ebe25a7a5c319cf5a58f368c5bc0dd3a672e4a66d0d86382194a28bc9ad92f1"
+dependencies = [
+ "cc",
+ "ruspiro-arch-aarch64",
 ]
 
 [[package]]
@@ -121,6 +191,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebfbf049577a3159ff4666ac6e312b137696b88a72caa056a3a8322a0de96ba2"
 dependencies = [
  "ruspiro-register",
+]
+
+[[package]]
+name = "ruspiro-mmu"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5ccf761748f8bb59fca6d9130c8f41124f205ee7ed0ebed968a6741bd5b1da9"
+dependencies = [
+ "ruspiro-arch-aarch64",
 ]
 
 [[package]]

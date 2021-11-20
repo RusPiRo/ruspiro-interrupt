@@ -13,7 +13,7 @@ args = ["build", "--release", "--features", "${FEATURES}"]
 
 [tasks.kernel]
 command = "aarch64-none-elf-objcopy"
-args = ["-O", "binary", "./target/aarch64-ruspiro/release/kernel", "./target/kernel8.img"]
+args = ["-O", "binary", "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/aarch64-ruspiro/release/kernel", "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/kernel8.img"]
 dependencies = [
     "build"
 ]

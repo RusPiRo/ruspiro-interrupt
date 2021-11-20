@@ -21,7 +21,7 @@
 //! use ruspiro_interrupt::{self as irq, IrqHandler, IsrSender, isr_channel};
 //!
 //! #[IrqHandler(ArmTimer)]
-//! fn timer_handler(tx: Option<IsrSender<Box<dyn Any>>>) {
+//! fn timer_handler(channel: Option<IsrSender<Box<dyn Any>>>) {
 //!     // IMPORTANT: acknowledge the irq !
 //!
 //!     // implement stuff that shall be executed if the interrupt is raised...
@@ -38,7 +38,7 @@
 //! use ruspiro_interrupt::*;
 //!
 //! #[IrqHandler(Aux, Uart1)]
-//! fn aux_uart1_handler(tx: Option<IsrSender<Box<dyn Any>>>) {
+//! fn aux_uart1_handler(channel: Option<IsrSender<Box<dyn Any>>>) {
 //!     // implement Uart1 interrupt handler here
 //! }
 //! ```
@@ -98,7 +98,7 @@ pub use ruspiro_interrupt_macros::IrqHandler;
 
 #[cfg(feature = "async")]
 pub use ruspiro_channel::mpmc::async_channel as isr_channel;
-#[cfg(all(not(feature = "async"), feature = "channel"))]
+#[cfg(not(feature = "async"))]
 pub use ruspiro_channel::mpmc::channel as isr_channel;
 #[cfg(feature = "async")]
 pub use ruspiro_channel::mpmc::AsyncReceiver as IsrReceiver;

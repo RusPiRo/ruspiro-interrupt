@@ -51,6 +51,11 @@ jobs:
           cd ./interrupt
           cargo make pi4_high
 
+      - name: Compile Example
+        run: |
+          cd ./interrupt/examples/minimal
+          cargo make pi3
+
   publish_dry:
     name: Run Cargo Publish Dry-Run
     runs-on: ubuntu-latest
