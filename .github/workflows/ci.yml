@@ -57,7 +57,7 @@ jobs:
       - name: Compile Example
         run: |
           cd ./interrupt/examples/minimal
-          cargo make --profile pipeline pi3
+          cargo make --profile pipeline build
 
   publish_dry:
     name: Run Cargo Publish Dry-Run
