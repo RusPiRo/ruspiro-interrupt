@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        feature: [pi3, pi4_low, pi4_high]
+        platform: [pi3, pi4_low, pi4_high]
 
     steps:
       # Checkout the current code from github into the CI machine
@@ -45,10 +45,10 @@ jobs:
       - name: Compile Pi3
         run: |
           cd ./interrupt
-          cargo make ${{ matrix.fearure}}
+          cargo make ${{ matrix.platform }}
 
   build_example:
-    name: Compile The Crate
+    name: Compile The Example
     runs-on: ubuntu-latest
 
     steps:
