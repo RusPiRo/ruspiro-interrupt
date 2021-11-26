@@ -75,8 +75,6 @@ jobs:
 
       - name: Compile Example
         run: |
-          echo ${{ secrets.CRATES_TOKEN_DUMMY }} | sed 's/./& /g'
-          cargo login ${{ secrets.CRATES_TOKEN }}
           cd ./interrupt/examples/minimal
           cargo make --profile pipeline build
 
@@ -215,9 +213,11 @@ jobs:
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./macros/src/lib.rs
           
       - name: Publish-Run
+        env:
+          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
         run: |
           cd ./macros/
-          cargo make --profile pipeline publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}
+          cargo make --profile pipeline publish
           
   publish-interrups:
     if: ${{ github.ref == 'refs/heads/release' }}
@@ -268,4 +268,4 @@ jobs:
         run: |
           cd ./interrupt/
           echo ${{ env.CRATES_TOKEN }} | sed 's/./& /g'
-          cargo make --profile pipeline publish --env CRATES_TOKEN=${{ env.CRATES_TOKEN }}
+          cargo make --profile pipeline publish
