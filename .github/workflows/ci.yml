@@ -267,5 +267,4 @@ jobs:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
         run: |
           cd ./interrupt/
-          echo ${{ env.CRATES_TOKEN }} | sed 's/./& /g'
           cargo make --profile pipeline publish
