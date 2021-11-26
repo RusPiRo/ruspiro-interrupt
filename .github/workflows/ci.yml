@@ -75,7 +75,8 @@ jobs:
 
       - name: Compile Example
         run: |
-          echo ${{ secrets.CRATES_TOKEN }} | sed 's/./& /g'
+          echo ${{ secrets.CRATES_TOKEN_DUMMY }} | sed 's/./& /g'
+          cargo login ${{ secrets.CRATES_TOKEN }}
           cd ./interrupt/examples/minimal
           cargo make --profile pipeline build
 
