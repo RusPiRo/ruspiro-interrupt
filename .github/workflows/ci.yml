@@ -112,7 +112,7 @@ jobs:
           # cargo make publish_dry --profile pipeline
 
   prepare_release:
-    needs: [build, publish_dry]
+    needs: [build, publish_dry, build_example]
     if: ${{ github.ref == 'refs/heads/development' }}
     name: Prepare Release - Create Release PR
     runs-on: ubuntu-latest
@@ -127,7 +127,7 @@ jobs:
           PULL_REQUEST_BODY: "Automatic PR to the release branch as preperation to publish the library"
 
   deploy:
-    needs: [build, publish_dry]
+    needs: [build, publish_dry, build_example]
     if: ${{ github.ref == 'refs/heads/release' }}
     name: Create Release
     runs-on: ubuntu-latest
@@ -213,9 +213,11 @@ jobs:
           sed -i -e 's/||VERSION||/'$CRATE_VERSION'/g' ./macros/src/lib.rs
           
       - name: Publish-Run
+        env:
+          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
         run: |
           cd ./macros/
-          cargo make --profile pipeline publish --env CRATES_TOKEN=${{ secrets.CRATES_TOKEN }}
+          cargo make --profile pipeline publish
           
   publish-interrups:
     if: ${{ github.ref == 'refs/heads/release' }}
@@ -265,4 +267,5 @@ jobs:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
         run: |
           cd ./interrupt/
-          cargo make --profile pipeline publish --env CRATES_TOKEN=${{ env.CRATES_TOKEN }}
+          echo ${{ env.CRATES_TOKEN }} | sed 's/./& /g'
+          cargo make --profile pipeline publish
